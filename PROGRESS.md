@@ -253,3 +253,15 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 
 - Founder requested a streamlined prize list with exciting visuals and leaderboards. Shared demo/live rows feature gold cash, tropical travel, violet laptop and blue generic-prize illustrations, large prize names, top-three standings with photos and relative score bars, expandable full standings and rules.
 - Demo laptop prize changed from Mac mini to MacBook Pro per latest request. No real reward amounts, rules or eligibility changed. CTA links to existing AI drafting; no automatic participation or publishing. No new database schema or external image service.
+
+- Verification: 70 unit/database tests, lint/typecheck, build and all 16 desktop/mobile browser/accessibility tests pass. Desktop/mobile hosted preview visually verified; no horizontal overflow at 390px. Independent review requested exact cutoff times, now preserved in expanded rules. PR #4 merged at 920338a6037462033b2ed4e13d77bfc9979bab00; production deploy 6aac36fd1583650008816720 published successfully and live Rewards verified.
+
+## September 17 — M6 AI content engine, manual-source vertical slice
+
+- Adopted the founder’s attached master prompt, preserved in docs/content-engine/BUILD-SPEC.md. Resolved its later autopilot conflict in favor of its explicit no-auto-publication first release. Scoped UI changes to AI main content; other tabs and shared shell unchanged.
+- Added employee onboarding, role/voice/preferences, post-first Today, drafts/history, explicit approval/export, manual results, pause/delete, and local admin strategy/sources/review/usage screens.
+- Added migration 014 with ten RLS-protected tables, transactional commands, explicit source-user ACLs, exact evidence atoms, durable leased jobs, quotas, retries, review integrity, expiry and deletion invalidation.
+- Added official OpenAI structured-output service and Netlify scheduled queue trigger; no paid service provisioned and no secret/account configuration changed. Manual, demo and export adapter contracts are groundwork, not live third-party integrations.
+- Independent review found SQL name ambiguities, editable-role authorization, legacy approval revocation and publication bypass risks; fixed with explicit ACLs, state/revision checks, legacy publishing guard and regression tests.
+- Setup and limitations are documented in docs/content-engine/IMPLEMENTATION.md. Hosted Supabase/provider smoke tests remain blocked on account setup. This is not the complete master-prompt roadmap.
+- Validation: local production build, lint, typecheck and unit/database suite pass before release; hosted browser regression results will be recorded after CI. Source notes must be manually anonymized; automated contact/secret redaction is not comprehensive anonymization.

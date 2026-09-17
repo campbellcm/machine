@@ -90,3 +90,7 @@ V1 acceptance path: invite teammate → connect LinkedIn or X → select work co
 - Personal-account integration decision resolved: use Crewcast scheduling with provider APIs.
 
 Until resolved, avoid committing to a paid provider or unsupported connection method.
+
+## September 17 AI-tab content engine amendment
+
+The founder adopted `docs/content-engine/BUILD-SPEC.md` for the AI tab. Implement the approved manual-source → evidence → personalized draft → author review → export vertical slice first. Employee and admin controls remain local to AI. Existing global routes, Home, Team, Rewards, authentication and navigation are unchanged. No automatic publication; explicit author approval and copy/export are the initial path. Explicit shared-user ACLs govern access; editable role descriptions only guide relevance. See `docs/content-engine/IMPLEMENTATION.md` for shipped scope, setup and deferred integrations. This amendment supersedes conflicting older AI-provider UI details, but does not claim the complete original V1 roadmap is delivered.
