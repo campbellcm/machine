@@ -109,3 +109,43 @@ test("four tabs are accessible in dark mode", async ({ page }) => {
     ).toBe(true);
   }
 });
+
+test("AI company review returns final approval to the employee", async ({
+  page,
+}) => {
+  await page.goto("/demo/ai");
+  await page
+    .getByRole("button", { name: "AI administration", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Content Strategy", exact: true })
+    .click();
+  await page
+    .getByLabel("Require company review before an employee’s final approval")
+    .check();
+  await page
+    .getByRole("button", { name: "Save controls", exact: true })
+    .click();
+  await page.getByRole("button", { name: "My content", exact: true }).click();
+  await page.getByRole("button", { name: "Approve post", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confirm approval", exact: true })
+    .click();
+  await expect(
+    page.getByText("With your reviewer", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "AI administration", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Return for final approval", exact: true })
+    .click();
+  await page.getByRole("button", { name: "My content", exact: true }).click();
+  await page.getByRole("button", { name: "Approve post", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confirm approval", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Copy approved post", exact: true }),
+  ).toBeVisible();
+});

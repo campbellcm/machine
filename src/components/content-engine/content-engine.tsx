@@ -128,12 +128,19 @@ export function ContentEngine({
             if (operation === "edit") {
               d.body = String(input.body);
               d.revision++;
+              d.reviewer_approved = false;
               d.state = "ready_for_employee";
               d.versions.unshift({ revision: d.revision, body: d.body });
             }
             if (operation === "approve")
-              d.state = next.strategy.review ? "ready_for_review" : "approved";
-            if (operation === "review") d.state = "ready_for_employee";
+              d.state =
+                next.strategy.review && !d.reviewer_approved
+                  ? "ready_for_review"
+                  : "approved";
+            if (operation === "review") {
+              d.state = "ready_for_employee";
+              d.reviewer_approved = true;
+            }
             if (operation === "request_changes")
               d.state = "employee_changes_requested";
             if (operation === "reject") d.state = "rejected";
@@ -973,17 +980,26 @@ function DraftCard({
         <>
           {d.state === "approved" ? (
             <div className={styles.actions}>
-              <button className={styles.primary} onClick={() => exportPost()}>
+              <button
+                className={styles.primary}
+                disabled={editing || busy}
+                onClick={() => exportPost()}
+              >
                 Copy approved post
               </button>
-              <button onClick={() => exportPost(true)}>Export</button>
+              <button
+                disabled={editing || busy}
+                onClick={() => exportPost(true)}
+              >
+                Export
+              </button>
               <button onClick={() => setEditing(true)}>Edit</button>
             </div>
           ) : (
             <div className={styles.actions}>
               <button
                 className={styles.primary}
-                disabled={busy || d.state === "ready_for_review"}
+                disabled={busy || editing || d.state === "ready_for_review"}
                 onClick={() => setConfirm(!confirm)}
               >
                 Approve post

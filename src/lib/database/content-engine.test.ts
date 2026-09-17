@@ -288,10 +288,25 @@ describe("Content engine permissions and workflow", () => {
       ]),
     ).toBe(0);
   });
-  it("rejects exports after legacy company controls revoke approval",async()=>{
-    await as(member);const other=await value<string>("select draft_id from ce_draft_meta where state='ready_for_employee' limit 1");
-    await command('approve',{id:other,revision:1,confirmed:true});await as(owner);await command('review',{id:other,revision:1});await as(member);await command('approve',{id:other,revision:1,confirmed:true});
-    await db.exec('reset role');await db.query("update drafts set status='draft',approved_revision=null where id=$1",[other]);await as(member);await expect(command('export',{id:other,revision:1})).rejects.toThrow(/Approve/);
+  it("rejects exports after legacy company controls revoke approval", async () => {
+    await as(member);
+    const other = await value<string>(
+      "select draft_id from ce_draft_meta where state='ready_for_employee' limit 1",
+    );
+    await command("approve", { id: other, revision: 1, confirmed: true });
+    await as(owner);
+    await command("review", { id: other, revision: 1 });
+    await as(member);
+    await command("approve", { id: other, revision: 1, confirmed: true });
+    await db.exec("reset role");
+    await db.query(
+      "update drafts set status='draft',approved_revision=null where id=$1",
+      [other],
+    );
+    await as(member);
+    await expect(command("export", { id: other, revision: 1 })).rejects.toThrow(
+      /Approve/,
+    );
   });
   it("cancels in-flight work on pause and invalidates drafts on source removal", async () => {
     await as(member);

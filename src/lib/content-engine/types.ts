@@ -21,6 +21,7 @@ export type Idea = {
 };
 export type EngineDraft = {
   is_owner: boolean;
+  reviewer_approved?: boolean;
   id: string;
   body: string;
   channel: "linkedin" | "x";
