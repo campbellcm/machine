@@ -180,7 +180,7 @@ begin
     update ce_draft_meta set state=case when operation='reject' then 'rejected' else 'archived' end where draft_id=d.id;
     update drafts set status='draft',approved_revision=null where id=d.id;
    elsif operation in ('more','less') then
-    update ce_profiles set preferences=jsonb_set(preferences,array[coalesce(meta.details->>'topic','general')],to_jsonb(greatest(-10,least(10,coalesce((preferences->>coalesce(meta.details->>'topic','general'))::int,0)+case when operation='more' then 1 else -1 end)))) where organization_id=org and user_id=person;
+    update ce_profiles set preferences=jsonb_set(preferences,array[coalesce(meta.details->>'evidenceTopic',meta.details->>'topic','general')],to_jsonb(greatest(-10,least(10,coalesce((preferences->>coalesce(meta.details->>'evidenceTopic',meta.details->>'topic','general'))::int,0)+case when operation='more' then 1 else -1 end)))) where organization_id=org and user_id=person;
    elsif operation in ('export','published') then
     if meta.state<>'approved' or d.status<>'approved' or d.approved_revision is distinct from d.revision or meta.invalidated or not ce_enabled(org,person) then raise exception 'Approve current text first';end if;
     if exists(select 1 from unnest(meta.source_ids) id where not ce_source_allowed(id,person)) then raise exception 'Evidence expired';end if;
@@ -275,7 +275,7 @@ begin
   select jsonb_agg(to_jsonb(a)) into evidence from (select a.* from ce_atoms a where a.organization_id=j.organization_id and a.expires_at>now() and a.external_use<>'internal_only' and ce_source_allowed(a.source_id,j.user_id) order by a.created_at desc limit 40) a;
  end if;
  update ce_jobs set status='running',attempts=attempts+1,lease=gen_random_uuid(),started_at=now(),available_at=now()+interval '2 minutes',payload=payload||jsonb_build_object('profile_revision',p.revision,'settings_revision',cfg.revision) where id=job returning * into j;
- return jsonb_build_object('job',to_jsonb(j),'strategy',cfg.config,'profile',p.config,'preferences',p.preferences,'company',(select name from organizations where id=j.organization_id),'evidence',coalesce(evidence,'[]'),'opportunity',to_jsonb(o),'recent',coalesce((select jsonb_agg(details->>'topic') from (select details from ce_draft_meta where organization_id=j.organization_id and user_id=j.user_id order by created_at desc limit 12) d),'[]'));
+ return jsonb_build_object('job',to_jsonb(j),'strategy',cfg.config,'profile',p.config,'preferences',p.preferences,'company',(select name from organizations where id=j.organization_id),'evidence',coalesce(evidence,'[]'),'opportunity',to_jsonb(o),'recent',coalesce((select jsonb_agg(coalesce(details->>'evidenceTopic',details->>'topic')) from (select details from ce_draft_meta where organization_id=j.organization_id and user_id=j.user_id order by created_at desc limit 12) d),'[]'));
 end$$;
 create function public.ce_finish(job uuid,claim uuid,result jsonb,usage jsonb,failure text default null) returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
 declare j ce_jobs;s ce_sources;p ce_profiles;cfg ce_settings;a jsonb;i int:=0;did uuid;oid uuid;src uuid;atoms uuid[];sources uuid[];v jsonb;op ce_opportunities;
@@ -315,7 +315,7 @@ begin
    if i>=3 then exit;end if;
    if not check_draft(j.organization_id,v->>'body') then raise exception 'Disclosure or policy';end if;
    insert into drafts(organization_id,user_id,body,channel,prompt_version,claims) values(j.organization_id,j.user_id,v->>'body',p.config->>'platform','content-v1',array(select jsonb_array_elements_text(v->'riskFlags'))) returning id into did;
-   insert into ce_draft_meta(draft_id,organization_id,user_id,opportunity_id,job_id,source_ids,atom_ids,details) values(did,j.organization_id,j.user_id,op.id,job,sources,atoms,(result-'variants')||v||jsonb_build_object('model',usage->>'model','prompt_version','content-v1'));
+   insert into ce_draft_meta(draft_id,organization_id,user_id,opportunity_id,job_id,source_ids,atom_ids,details) values(did,j.organization_id,j.user_id,op.id,job,sources,atoms,(result-'variants')||v||jsonb_build_object('model',usage->>'model','prompt_version','content-v1','evidenceTopic',op.title));
    insert into ce_versions(organization_id,user_id,draft_id,revision,body) values(j.organization_id,j.user_id,did,1,v->>'body');i=i+1;
   end loop;
   if i<>3 then raise exception 'Three distinct options required';end if;
@@ -330,7 +330,7 @@ begin
  return jsonb_build_object(
  'people',coalesce((select jsonb_agg(jsonb_build_object('id',m.user_id,'name',m.display_name,'role',p.config->>'role','enrolled',coalesce(p.enrolled,false),'paused',coalesce(p.paused,false),'cadence',p.config->>'cadence','delivery','Inside the app')) from memberships m left join ce_profiles p on p.organization_id=m.organization_id and p.user_id=m.user_id where m.organization_id=org and m.removed_at is null),'[]'),
  'counts',(select jsonb_build_object('drafts',count(*),'approved',count(*) filter(where state='approved'),'published',count(*) filter(where state='published'),'rejected',count(*) filter(where state='rejected'),'review',count(*) filter(where state='ready_for_review')) from ce_draft_meta where organization_id=org),
- 'jobs',coalesce((select jsonb_agg(jsonb_build_object('id',id,'kind',kind,'status',status,'attempts',attempts,'error',error_code,'usage',usage,'created_at',created_at)) from (select * from ce_jobs where organization_id=org order by created_at desc limit 30) j),'[]'),
+ 'jobs',coalesce((select jsonb_agg(jsonb_build_object('id',id,'kind',kind,'status',status,'attempts',attempts,'error_code',error_code,'usage',usage,'created_at',created_at)) from (select * from ce_jobs where organization_id=org order by created_at desc limit 30) j),'[]'),
  'feedback',coalesce((select jsonb_agg(x) from (select action,detail->>'reason' reason,count(*) total from ce_events where organization_id=org group by action,detail->>'reason') x),'[]'));
 end$$;
 revoke all on function ce_enabled(uuid,uuid),ce_source_allowed(uuid,uuid),ce_can_read_source(uuid),ce_can_read_draft(uuid),ce_enqueue(uuid,uuid,text,uuid,jsonb,text),ce_command(uuid,text,jsonb),ce_tick(),ce_claim(uuid),ce_finish(uuid,uuid,jsonb,jsonb,text),ce_admin_report(uuid),ce_invalidate_source(),ce_membership_cleanup(),ce_draft_guard() from public,anon,authenticated;

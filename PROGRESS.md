@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: Simplified V1 — Home, Team, Rewards, AI, and daily provider-backed drafting.
+Current milestone: M6 — opt-in AI content engine, approved manual-source vertical slice.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -265,3 +265,5 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Independent review found SQL name ambiguities, editable-role authorization, legacy approval revocation and publication bypass risks; fixed with explicit ACLs, state/revision checks, legacy publishing guard and regression tests.
 - Setup and limitations are documented in docs/content-engine/IMPLEMENTATION.md. Hosted Supabase/provider smoke tests remain blocked on account setup. This is not the complete master-prompt roadmap.
 - Validation: local production build, lint, typecheck and unit/database suite pass before release; hosted browser regression results will be recorded after CI. Source notes must be manually anonymized; automated contact/secret redaction is not comprehensive anonymization.
+
+- Release checks: independent security review cleared; GitHub CI at 94f633c passed 87 unit/database tests and all 18 desktop/mobile browser tests, including company review and dark-mode accessibility. Final ranking-feedback regression increases the local suite to 88 tests; final CI pending on that small follow-up.

@@ -201,6 +201,16 @@ describe("Content engine permissions and workflow", () => {
     const report = await value("select ce_admin_report($1)", [org]);
     expect(JSON.stringify(report)).not.toContain("Document ownership");
   });
+  it("learns preferences using the same evidence topic used for ranking", async () => {
+    await as(member);
+    await command("more", { id: draft, revision: 1 });
+    expect(
+      await value(
+        "select preferences->>'Make ownership explicit' from ce_profiles where user_id=$1",
+        [member],
+      ),
+    ).toBe("1");
+  });
   it("requires explicit review, invalidates approval on edit, and exports the approved revision", async () => {
     await as(member);
     await expect(
