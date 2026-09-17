@@ -336,9 +336,6 @@
 .muted {
   font-size: 12px !important;
 }
-.root :global([data-theme="dark"]) {
-  color: inherit;
-}
 :global([data-theme="dark"]) .root {
   color: #e4eadf;
 }
@@ -391,5 +388,73 @@
   color: #b0cc9b !important;
 }
 
-:global([data-theme="dark"]) .tabs button {color:#c6d6bd;}
-:global([data-theme="dark"]) .tabs button[aria-current] {color:#29432b;}
+:global([data-theme="dark"]) .tabs button {
+  color: #c6d6bd;
+}
+:global([data-theme="dark"]) .tabs button[aria-current] {
+  color: #29432b;
+}
+
+.badge {
+  color: #344d39;
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .root {
+    color: #e4eadf;
+  }
+  :global(:root:not([data-theme="light"])) .root h1,
+  :global(:root:not([data-theme="light"])) .root h2,
+  :global(:root:not([data-theme="light"])) .root h3 {
+    color: #eff3e9;
+  }
+  :global(:root:not([data-theme="light"])) .root p {
+    color: #abbba9;
+  }
+  :global(:root:not([data-theme="light"])) .panel,
+  :global(:root:not([data-theme="light"])) .post,
+  :global(:root:not([data-theme="light"])) .onboarding {
+    background: #202b24;
+    border-color: #41503d;
+  }
+  :global(:root:not([data-theme="light"])) .root input,
+  :global(:root:not([data-theme="light"])) .root textarea,
+  :global(:root:not([data-theme="light"])) .root select {
+    background: #17221b;
+    color: #e4ecde;
+    border-color: #64795c;
+  }
+  :global(:root:not([data-theme="light"])) .root label,
+  :global(:root:not([data-theme="light"])) .why summary {
+    color: #cad9c1;
+  }
+  :global(:root:not([data-theme="light"])) .postText {
+    color: #e1eadb !important;
+  }
+  :global(:root:not([data-theme="light"])) .empty,
+  :global(:root:not([data-theme="light"])) .sample,
+  :global(:root:not([data-theme="light"])) .notice,
+  :global(:root:not([data-theme="light"])) .choice,
+  :global(:root:not([data-theme="light"])) .stats > div {
+    background: #263329;
+    color: #c6d6bd;
+    border-color: #506447;
+  }
+  :global(:root:not([data-theme="light"])) .stats strong {
+    color: #c8e6ae;
+  }
+  :global(:root:not([data-theme="light"])) .warning,
+  :global(:root:not([data-theme="light"])) .confirm {
+    background: #383320;
+    color: #eee5c3;
+  }
+  :global(:root:not([data-theme="light"])) .eyebrow {
+    color: #b0cc9b !important;
+  }
+
+  :global(:root:not([data-theme="light"])) .tabs button {
+    color: #c6d6bd;
+  }
+  :global(:root:not([data-theme="light"])) .tabs button[aria-current] {
+    color: #29432b;
+  }
+}
