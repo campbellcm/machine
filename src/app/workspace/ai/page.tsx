@@ -111,7 +111,10 @@ export default async function AI() {
           preferences: profile.data.preferences,
         }
       : null,
-    sources: sources.data || [],
+    sources: (sources.data || []).map((s) => ({
+      ...s,
+      is_owner: s.user_id === user.id,
+    })),
     ideas: ideas.data || [],
     drafts: (drafts || []).map((d) => {
       const m = meta.data!.find((m) => m.draft_id === d.id)!;

@@ -97,6 +97,7 @@ export function ContentEngine({
           } else if (operation === "source")
             next.sources.unshift({
               id: crypto.randomUUID(),
+              is_owner: true,
               title: String(input.title),
               content: String(input.text),
               visibility: String(input.visibility),
@@ -332,7 +333,35 @@ export function ContentEngine({
                 </button>
               </div>
               {showSource && (
-                <SourceForm command={command} admin={false} busy={busy} />
+                <>
+                  <SourceForm command={command} admin={false} busy={busy} />
+                  <details className={styles.panel}>
+                    <summary>Your approved sources</summary>
+                    {current.sources.map((s) => (
+                      <details className={styles.why} key={s.id}>
+                        <summary>
+                          {s.title} · {s.status}
+                        </summary>
+                        <p>{s.content}</p>
+                        <p>
+                          {s.external_use.replaceAll("_", " ")} · expires{" "}
+                          {new Date(s.expires_at).toLocaleDateString()}
+                        </p>
+                        {s.is_owner && (
+                          <button
+                            disabled={busy}
+                            onClick={() =>
+                              command("delete_source", { id: s.id })
+                            }
+                          >
+                            Remove source and withdraw draft approvals
+                          </button>
+                        )}
+                      </details>
+                    ))}
+                    {!current.sources.length && <p>No sources yet.</p>}
+                  </details>
+                </>
               )}
               {current.profile?.paused ? (
                 <div className={styles.empty}>

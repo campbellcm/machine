@@ -1,5 +1,6 @@
 import type { ContentProfile, Strategy } from "./domain";
 export type Source = {
+  is_owner?: boolean;
   id: string;
   title: string;
   content: string;

@@ -41,6 +41,7 @@ export function contentDemo(
     specific,
   ].map((s) => ({
     ...s,
+    is_owner: true,
     visibility: "organization",
     external_use: "approved_fact",
     status: "ready",
