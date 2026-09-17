@@ -30,6 +30,7 @@ export type EngineDraft = {
   state: string;
   invalidated: boolean;
   opportunity_id: string | null;
+  job_id?: string;
   source_ids: string[];
   atom_ids: string[];
   published_at: string | null;

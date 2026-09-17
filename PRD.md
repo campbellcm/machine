@@ -98,3 +98,10 @@ The founder adopted `docs/content-engine/BUILD-SPEC.md` for the AI tab. Implemen
 ## Simple AI setup amendment
 
 The founder’s latest design replaces the default AI control panel with “Let AI draft your content,” selectable 1–10 drafts per day, and Email/Slack/iMessage/WhatsApp delivery preferences. Keep advanced content/admin workflows accessible through secondary links. Save the requested quantity and use it in daily generation. Delivery preferences must not appear connected until an actual integration exists; current drafts remain available inside the app. Preserve author approval and the rest of the four-tab app.
+
+
+## AI studio refinement — September 17, 2026
+
+The founder’s latest request supersedes the large daily-quantity setup as the primary AI screen. Lead with “Let AI create your content.” and a spacious ChatGPT-style composer: “Give me a topic and I’ll draft a post for you”. Use the existing company OpenAI API connection, not personal ChatGPT sign-in. The secondary section offers three daily drafts by default, email/Slack/iMessage preferences, and “Make my content”. Keep quantity and role preferences in progressive disclosure. Use the site's neutral surfaces, blue accents, system typography, light/dark themes, and compact contextual links.
+
+Topic requests use a selected approved context, existing consent/limits/queue/guardrails, and author review. No anonymous live AI calls. Samples are explicitly prepared examples. External delivery remains unconnected and must be labeled honestly; choosing a channel saves a preference only.
