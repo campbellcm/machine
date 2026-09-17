@@ -30,6 +30,11 @@ export default async function Profile() {
           />
         </label>
         <label>
+          Profile photo URL
+          <input name="photo_url" type="url" placeholder="https://…" defaultValue={member.photo_url || ""} maxLength={2048} />
+          <small>Use an HTTPS link to your photo. Leave blank to show initials.</small>
+        </label>
+        <label>
           Job title
           <input name="title" defaultValue={member.job_title} maxLength={120} />
         </label>

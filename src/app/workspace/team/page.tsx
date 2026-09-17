@@ -1,3 +1,4 @@
+import { TeamAvatar } from "@/components/v1/team-avatar";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { linkedinConfig } from "@/lib/social/linkedin";
@@ -32,6 +33,8 @@ export default async function Team({
     .select("*")
     .eq("organization_id", org.id)
     .is("removed_at", null);
+  const { data: photos } = await db.rpc("team_photos", { org: org.id });
+  const photoByUser = new Map<string, string>((photos || []).map((p: { user_id: string; photo_url: string }) => [p.user_id, p.photo_url]));
   const token = (await cookies()).get("crewcast_invite")?.value;
   return (
     <div className="v1">
@@ -67,11 +70,10 @@ export default async function Team({
           migrations.
         </p>
       )}
-      <div className="v1-grid" style={{ margin: "24px 0" }}>
+      <div className="team-list" role="list" aria-label="Team members">
         {profiles.map((p) => (
-          <section className="v1-card" key={p.user_id}>
-            <h3>{p.display_name || "New teammate"}</h3>
-            <p>{p.job_title}</p>
+          <section className="team-row" role="listitem" key={p.user_id}>
+            <div className="team-person"><TeamAvatar name={p.display_name || "New teammate"} src={photoByUser.get(p.user_id)} /><div><h3>{p.display_name || "New teammate"}</h3><p>{p.job_title}</p></div></div>
             {(["linkedin", "x"] as const).map((channel) => {
               const name = channel === "x" ? p.x_name : p.linkedin_name;
               const expires =
@@ -79,7 +81,7 @@ export default async function Team({
               const expired = !!expires && Date.parse(expires) <= Date.now();
               const ready = channel === "x" ? !!xConfig() : !!linkedinConfig();
               return (
-                <div key={channel}>
+                <div className="team-channel" key={channel}>
                   <h4>{channel === "x" ? "X" : "LinkedIn"}</h4>
                   <small>
                     {name
