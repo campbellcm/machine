@@ -224,3 +224,17 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Fathom, Slack and CRM native ingestion, actual impression/sales analytics and impression/sales prize scoring remain engineering work. No CRM selected by founder yet.
 - Scheduler is bounded for a pilot: two daily generations per 15-minute slot, one scheduled LinkedIn post per maintenance slot. Busy queues delay delivery. X authorization expires without refresh; scheduled X posting unavailable.
 - Local and remote Git histories differ from the original connector import. Publish this branch using the connector and merge via reviewed PR; never force-push.
+
+### Release verification
+
+- GitHub PR #1 (https://github.com/campbellcm/machine/pull/1) merged after independent review and passing CI. Merge commit: 45d2b30e70832d584b73ec1dc034bdd4a4437480.
+- GitHub checks passed lint, type checking, 69 unit/database/transport tests, fixture validation, production build, and all 16 desktop/mobile browser tests including accessibility.
+- First CI run caught a mobile keyboard scrolling issue; made the leaderboard region focusable. Netlify initially treated a declaration file as a function; moved that declaration outside the functions directory. Both checks passed on the corrected commit 7333e7a2e6018f7265f1be4174f078d691ecd42f.
+- Netlify deploy preview 6aac2baa875a0d0008e97a05 is ready; hosted Home verified. Production deploy 6aac2c60c118680008f31191 published successfully from merge 45d2b30 at https://crewcast-machine.netlify.app. Verified the live four-tab AI screen. Both scheduled functions are registered; provider/database setup is still required before they can process real jobs.
+
+## Compact Team list — September 17, 2026
+
+- Founder requested compact rows instead of cards, with a photo beside each member. Updated demo and live rosters with responsive identity/LinkedIn/X columns and preserved personal connection controls.
+- Demo uses fictional identities with Pravatar placeholder portraits (https://pravatar.cc). Live photos are member-owned HTTPS URLs set in profile settings, with initials for missing or failed images. Images load directly with no referrer, without a server-side proxy.
+- Additive migration 013 adds a profile photo column and tenant-checked photo read/write RPCs. Only the signed-in member can change their own photo; no credentials exposed.
+- Updated existing browser search selector for list semantics; added database coverage for own-photo updates and outsider denial.

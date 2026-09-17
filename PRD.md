@@ -25,7 +25,7 @@ Exactly four primary tabs: **Home, Team, Rewards, AI**. Profile, company setting
 
 ## Team
 
-- Company roster: name, role, connected LinkedIn profile, connected X profile, and connection health.
+- Compact list roster: profile photo (initials fallback), name, role, connected LinkedIn profile, connected X profile, and connection health. Teammates can set their own HTTPS profile photo URL.
 - Explicit states: not connected, connected, reconnect required, paused, sync failed. Show safe profile metadata and last successful sync.
 - Each teammate connects/disconnects their own accounts. Admins invite/remove members and view health; they cannot publish as another member or retrieve credentials.
 - Members can view the roster and safe connection metadata. Private drafts and credentials remain private.

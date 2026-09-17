@@ -47,6 +47,23 @@ beforeAll(async () => {
   );
 }, 30000);
 afterAll(() => db.close());
+describe("Team profile photos", () => {
+  it("allows own HTTPS photo updates, shares with colleagues, and denies outsiders", async () => {
+    await as(member);
+    await db.query("select save_profile_photo($1,'https://example.com/member.jpg')", [org]);
+    await expect(db.query("select save_profile_photo($1,'javascript:alert(1)')", [org])).rejects.toThrow();
+    await expect(db.query("select save_profile_with_photo($1,'Changed','Designer','',array['one','two','three'],true,'http://invalid.test/photo.jpg')", [org])).rejects.toThrow();
+    expect(await scalar("select display_name from memberships where user_id=$1", [member])).toBe("Member");
+    await as(owner);
+    const photos = await db.query<{ user_id: string; photo_url: string }>("select * from team_photos($1)", [org]);
+    expect(photos.rows.find(p => p.user_id === member)?.photo_url).toBe("https://example.com/member.jpg");
+    await db.query("select save_profile_photo($1,'')", [org]);
+    expect(await scalar("select photo_url from memberships where user_id=$1", [member])).toBe("https://example.com/member.jpg");
+    await as(outsider);
+    await expect(db.query("select * from team_photos($1)", [org])).rejects.toThrow(/Membership required/);
+    await expect(db.query("select save_profile_photo($1,'https://example.com/x.jpg')", [org])).rejects.toThrow(/Membership required/);
+  });
+});
 describe("V1 private schedules and atomic daily jobs", () => {
   it("hides schedule context and run ledgers from admins and outsiders, and rejects forged writes", async () => {
     for (const id of [owner, outsider]) {

@@ -52,8 +52,9 @@ export async function switchCompany(f: FormData) {
 }
 export async function saveProfile(f: FormData) {
   const { db, org } = await workspace();
-  const { error } = await db.rpc("save_profile", {
+  const { error } = await db.rpc("save_profile_with_photo", {
     org: org.id,
+    photo: str(f, "photo_url").trim(),
     person_name: z.string().trim().min(1).max(100).parse(f.get("name")),
     title: str(f, "title"),
     team: str(f, "department"),

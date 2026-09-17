@@ -33,7 +33,7 @@ test("four tabs, date filters, leaderboard and channel feed", async ({
 test("team search and sample daily routine", async ({ page }) => {
   await page.goto("/demo/team");
   await page.getByLabel("Find a teammate").fill("Sarah");
-  await expect(page.locator(".v1-grid .v1-card")).toHaveCount(1);
+  await expect(page.getByRole("list", { name: "Team members" }).getByRole("listitem")).toHaveCount(1);
   await page.getByRole("link", { name: "AI", exact: true }).click();
   await page.getByRole("button", { name: "Try sample routine" }).click();
   await expect(page.getByText("Sample routine on")).toBeVisible();

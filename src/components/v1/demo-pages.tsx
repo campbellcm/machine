@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { demoData } from "@/lib/demo/data";
 import { demoReport, rankPeople } from "@/lib/v1/report";
+import { TeamAvatar } from "./team-avatar";
 import { PageHeading } from "@/components/shared";
 export function DemoTeam() {
   const [query, setQuery] = useState("");
@@ -28,7 +29,7 @@ export function DemoTeam() {
           Set up your real team
         </Link>
       </div>
-      <div className="v1-grid">
+      <div className="team-list" role="list" aria-label="Team members">
         {demoData.teammates
           .filter((p) =>
             (p.name + " " + p.title)
@@ -36,26 +37,24 @@ export function DemoTeam() {
               .includes(query.toLowerCase()),
           )
           .map((p) => (
-            <article className="v1-card" key={p.id}>
-              <span className={`avatar ${p.color}`}>{p.initials}</span>
-              <h3>{p.name}</h3>
-              <p>{p.title}</p>
-              <p>
+            <article className="team-row" role="listitem" key={p.id}>
+              <div className="team-person"><TeamAvatar name={p.name} src={`https://i.pravatar.cc/88?img=${[12,47,13,44,11,49,14,48,15,45,16,46][demoData.teammates.indexOf(p)]}`} /><div><h3>{p.name}</h3><p>{p.title}</p></div></div>
+              <div className="team-channel">
                 <strong>LinkedIn</strong>
                 <small>
                   {demoData.teammates.indexOf(p) < 8
                     ? "Sample profile connected"
                     : "Not connected · sample"}
                 </small>
-              </p>
-              <p>
+              </div>
+              <div className="team-channel">
                 <strong>X</strong>
                 <small>
                   {demoData.teammates.indexOf(p) % 3 === 0
                     ? "Sample profile connected"
                     : "Not connected · sample"}
                 </small>
-              </p>
+              </div>
             </article>
           ))}
       </div>
