@@ -9,6 +9,7 @@ import {
   normalizeMetrics,
   editDistance,
 } from "@/lib/content-engine/domain";
+import { engineReady, processEngineJob } from "@/lib/content-engine/service";
 import { revalidatePath } from "next/cache";
 export async function POST(request: Request) {
   const { db, org, user } = await workspace();
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
           "delete_source",
           "ideas",
           "generate",
+          "chat",
           "dismiss",
           "retry",
           "edit",
@@ -71,13 +73,17 @@ export async function POST(request: Request) {
           z.record(z.string(), z.unknown()).parse(input.metrics),
         ),
       };
-    else if (operation === "generate")
+    else if (operation === "generate" || operation === "chat")
       data = {
         id: z.uuid().parse(input.id),
-        instruction: z
-          .string()
-          .max(500)
-          .parse(input.instruction || ""),
+        instruction: redact(
+          z
+            .string()
+            .trim()
+            .max(500)
+            .min(operation === "chat" ? 1 : 0)
+            .parse(input.instruction || ""),
+        ),
         key: z.uuid().parse(input.key),
       };
     else if (operation === "edit") {
@@ -98,9 +104,17 @@ export async function POST(request: Request) {
         edit_distance: editDistance(previous.body, body),
       };
     }
+    if (operation === "chat" && !engineReady())
+      return Response.json(
+        {
+          error:
+            "Your company needs to connect OpenAI before drafting can begin.",
+        },
+        { status: 503 },
+      );
     const { data: result, error } = await db.rpc("ce_command", {
       org: org.id,
-      operation,
+      operation: operation === "chat" ? "generate" : operation,
       input: data,
     });
     if (error)
@@ -114,6 +128,15 @@ export async function POST(request: Request) {
         },
         { status: 400 },
       );
+    // The authorized, rate-limited queue creates the job. Claiming rechecks consent
+    // and source access before an immediate attempt; the scheduler handles retries.
+    if (operation === "chat" && result?.id) {
+      try {
+        await processEngineJob(result.id);
+      } catch {
+        // Keep the durable job available to the existing queue. Never log content.
+      }
+    }
     revalidatePath("/workspace/ai");
     return Response.json(result);
   } catch {

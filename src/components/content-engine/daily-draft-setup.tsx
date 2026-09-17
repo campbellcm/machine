@@ -2,6 +2,9 @@
 import { useState } from "react";
 import {
   ArrowRight,
+  ArrowUp,
+  SlidersHorizontal,
+  WandSparkles,
   Check,
   Mail,
   MessageCircle,
@@ -21,7 +24,6 @@ const channels = [
   { id: "email", label: "Email", Icon: Mail },
   { id: "slack", label: "Slack", Icon: Hash },
   { id: "imessage", label: "iMessage", Icon: MessageCircle },
-  { id: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
 ] as const;
 type Command = (
   operation: string,
@@ -46,12 +48,63 @@ export function DailyDraftSetup({
   onSettings: () => void;
   onAdmin: () => void;
 }) {
-  const [profile, setProfile] = useState<ContentProfile>(
-    data.profile?.config || { ...defaultProfile, role: "", topics: [] },
-  );
+  const [profile, setProfile] = useState<ContentProfile>(() => {
+    const initial = data.profile?.config || {
+      ...defaultProfile,
+      role: "",
+      topics: [],
+    };
+    return {
+      ...initial,
+      delivery_preference:
+        initial.delivery_preference === "whatsapp"
+          ? "email"
+          : initial.delivery_preference,
+    };
+  });
   const [consent, setConsent] = useState(false),
     [starting, setStarting] = useState(false),
     [saved, setSaved] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [request, setRequest] = useState<{ topic: string; job: string } | null>(
+    null,
+  );
+  const [chatError, setChatError] = useState("");
+  const [openedAt] = useState(() => Date.now());
+  const ideas = data.ideas.filter(
+    (idea) =>
+      idea.status !== "dismissed" && Date.parse(idea.expires_at) > openedAt,
+  );
+  const [ideaId, setIdeaId] = useState(ideas[0]?.id || "");
+  const selectedIdea = ideas.find((idea) => idea.id === ideaId) || ideas[0];
+  const job = data.jobs.find((item) => item.id === request?.job);
+  const responses = data.drafts.filter(
+    (draft) => draft.is_owner && draft.job_id === request?.job && request,
+  );
+  const chatAvailable =
+    demo ||
+    (data.ready &&
+      data.strategy.enabled &&
+      !data.setupError &&
+      !!data.profile?.enrolled &&
+      !data.profile.paused);
+  async function sendTopic() {
+    if (busy || !topic.trim() || !selectedIdea || !chatAvailable) return;
+    setChatError("");
+    const result = await command("chat", {
+      id: selectedIdea.id,
+      instruction: topic.trim(),
+      key: crypto.randomUUID(),
+    });
+    if (result && typeof result.id === "string") {
+      setRequest({ topic: topic.trim(), job: result.id });
+      setTopic("");
+    } else {
+      setChatError(
+        "Your request could not be completed. Your topic is still here—please try again.",
+      );
+    }
+  }
   const count = profile.daily_count;
   const channel =
     channels.find((c) => c.id === profile.delivery_preference) || channels[0];
@@ -66,7 +119,7 @@ export function DailyDraftSetup({
     setSaved(false);
   };
   async function save() {
-    if (!enrolled && !starting) {
+    if (!starting) {
       setStarting(true);
       return;
     }
@@ -87,15 +140,163 @@ export function DailyDraftSetup({
     <div className={styles.page}>
       <header className={styles.hero}>
         <div className={styles.emblem} aria-hidden="true">
-          <Sparkles size={29} strokeWidth={1.5} />
-          <span />
+          <Sparkles size={25} strokeWidth={1.4} />
         </div>
-        <h1>Let AI draft your content</h1>
-        <p>
-          Get views, leads, and sales on autopilot
-          <br className={styles.desktopBreak} /> with the help of AI.
-        </p>
+        <p className={styles.eyebrow}>A little inspiration. Entirely you.</p>
+        <h1>
+          Let AI create
+          <br /> <span>your content.</span>
+        </h1>
       </header>
+      <section className={styles.studio} aria-label="AI content chat">
+        {request && (
+          <div className={styles.conversation}>
+            <p className={styles.userMessage}>{request.topic}</p>
+            <div className={styles.answer}>
+              <span className={styles.answerLabel}>
+                <Sparkles size={15} />{" "}
+                {demo ? "Sample response" : "Your writing assistant"}
+              </span>
+              {responses.length ? (
+                <>
+                  {demo && (
+                    <p className={styles.finePrint}>
+                      This is a prepared example, not an AI response to your
+                      topic. Live drafting uses your company’s OpenAI
+                      connection.
+                    </p>
+                  )}
+                  <p className={styles.draftBody}>{responses[0].body}</p>
+                  <button
+                    type="button"
+                    className={styles.textButton}
+                    onClick={onDrafts}
+                  >
+                    Review {responses.length > 1 ? "your drafts" : "this draft"}{" "}
+                    <ArrowRight size={14} />
+                  </button>
+                </>
+              ) : (
+                <p role="status">
+                  {job?.status === "failed"
+                    ? "We couldn’t prepare a draft. Try again or check your company’s AI setup."
+                    : job?.status === "canceled"
+                      ? "This request was canceled. Resume AI drafting to try again."
+                      : job?.status === "completed"
+                        ? "Your drafts are ready in Your drafts."
+                        : "Your topic is in the preparation queue. Your drafts will appear here when ready."}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+        <form
+          className={styles.composer}
+          onSubmit={(event) => {
+            event.preventDefault();
+            void sendTopic();
+          }}
+        >
+          <textarea
+            aria-label="Post topic"
+            placeholder="Give me a topic and I’ll draft a post for you"
+            value={topic}
+            maxLength={500}
+            rows={3}
+            disabled={busy}
+            onChange={(event) => setTopic(event.target.value)}
+          />
+          <div className={styles.composerBar}>
+            <span className={styles.powered}>
+              <WandSparkles size={16} /> ChatGPT{" "}
+              <span>· Powered by OpenAI</span>
+            </span>
+            <button
+              type="submit"
+              className={styles.send}
+              aria-label="Draft my post"
+              disabled={
+                busy || !topic.trim() || !selectedIdea || !chatAvailable
+              }
+            >
+              <ArrowUp size={21} />
+            </button>
+          </div>
+        </form>
+        <div className={styles.contextBar}>
+          <details>
+            <summary>
+              <SlidersHorizontal size={13} /> Writing context
+            </summary>
+            <div className={styles.contextFields}>
+              <label>
+                Approved context
+                <select
+                  aria-label="Approved context"
+                  value={selectedIdea?.id || ""}
+                  disabled={busy}
+                  onChange={(event) => setIdeaId(event.target.value)}
+                >
+                  {!ideas.length && (
+                    <option value="">Add approved context first</option>
+                  )}
+                  {ideas.map((idea) => (
+                    <option value={idea.id} key={idea.id}>
+                      {idea.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p>
+                Uses your topic and this approved context. No invented company
+                claims. Each request starts a new draft.
+              </p>
+              <button
+                type="button"
+                className={styles.textButton}
+                onClick={onSettings}
+              >
+                Manage your context <ChevronRight size={13} />
+              </button>
+            </div>
+          </details>
+          <span>
+            {profile.platform === "x" ? "X" : "LinkedIn"} · In your voice
+          </span>
+        </div>
+        {busy && (
+          <p role="status" className={styles.chatNotice}>
+            Working on it…
+          </p>
+        )}
+        {chatError && (
+          <p role="alert" className={styles.chatNotice}>
+            {chatError} {message}
+          </p>
+        )}
+        {!chatAvailable && (
+          <p className={styles.chatNotice}>
+            Finish company AI setup and enable your content profile to start
+            drafting.{" "}
+            <button
+              type="button"
+              className={styles.textButton}
+              onClick={onSettings}
+            >
+              Open preferences <ArrowRight size={12} />
+            </button>
+          </p>
+        )}
+        {!selectedIdea && (
+          <p className={styles.chatNotice}>
+            Add an approved note in Content preferences, then prepare ideas to
+            give your assistant writing context.
+          </p>
+        )}
+      </section>
+      <div className={styles.divider}>
+        <span>OR LET INSPIRATION COME TO YOU</span>
+      </div>
       <form
         className={styles.setup}
         onSubmit={(e) => {
@@ -104,133 +305,148 @@ export function DailyDraftSetup({
         }}
       >
         <fieldset disabled={busy} className={styles.formFields}>
-          <div className={styles.quantity}>
-            <span>Send me</span>
-            <select
-              aria-label="Drafts per day"
-              value={count}
-              onChange={(e) => change({ daily_count: Number(e.target.value) })}
-            >
-              {Array.from({ length: 10 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{count === 1 ? "draft" : "drafts"} per day.</span>
-          </div>
+          <h2 className={styles.dailyHeading}>
+            Or get {count} AI {count === 1 ? "draft" : "drafts"} per day
+            <br /> delivered via email, Slack or iMessage.
+          </h2>
           <p className={styles.quantityNote}>
-            A daily head start. In your voice.
+            Ready when you are. Just review and publish.
           </p>
-          <div className={styles.delivery}>
-            <p className={styles.label}>Receive your drafts via</p>
-            <div
-              className={styles.channels}
-              role="group"
-              aria-label="Draft delivery preference"
-            >
-              {channels.map(({ id, label, Icon }) => (
-                <button
-                  type="button"
-                  key={id}
-                  aria-pressed={profile.delivery_preference === id}
-                  onClick={() => change({ delivery_preference: id })}
+          {starting && (
+            <>
+              <div className={styles.delivery}>
+                <p className={styles.label}>Receive your drafts via</p>
+                <div
+                  className={styles.channels}
+                  role="group"
+                  aria-label="Draft delivery preference"
                 >
-                  <span className={`${styles.channelIcon} ${styles[id]}`}>
-                    <Icon size={23} strokeWidth={1.7} />
-                  </span>
-                  <span>{label}</span>
-                  {profile.delivery_preference === id && (
-                    <Check size={14} className={styles.selectedCheck} />
-                  )}
-                </button>
-              ))}
-            </div>
-            <p className={styles.deliveryNote}>
-              {channel.label} delivery is not connected yet. Your drafts will be
-              available here in the app.
-            </p>
-          </div>
-          {(starting || enrolled) && (
-            <details
-              className={styles.preferences}
-              open={starting || undefined}
-            >
-              <summary>
-                Make it yours <ChevronRight size={14} />
-              </summary>
-              <div className={styles.fields}>
-                <label>
-                  Your role
-                  <input
-                    value={profile.role}
-                    required
-                    minLength={2}
-                    maxLength={120}
-                    placeholder="e.g. Founder, sales lead, engineer"
-                    onChange={(e) => change({ role: e.target.value })}
-                  />
-                </label>
-                <label>
-                  Topics you talk about
-                  <input
-                    value={profile.topics.join(", ")}
-                    required
-                    placeholder="e.g. Customer stories, industry trends"
-                    onChange={(e) =>
-                      change({
-                        topics: e.target.value.split(",").map((t) => t.trim()),
-                      })
-                    }
-                  />
-                </label>
-                <label>
-                  Write for
-                  <select
-                    value={profile.platform}
-                    onChange={(e) =>
-                      change({ platform: e.target.value as "linkedin" | "x" })
-                    }
-                  >
-                    <option value="linkedin">LinkedIn</option>
-                    <option value="x">X</option>
-                  </select>
-                </label>
-                <label>
-                  Ready around
-                  <select
-                    value={profile.hour}
-                    onChange={(e) => change({ hour: Number(e.target.value) })}
-                  >
-                    {Array.from({ length: 24 }, (_, h) => (
-                      <option key={h} value={h}>
-                        {String(h).padStart(2, "0")}:00
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Timezone
-                  <input
-                    value={profile.timezone}
-                    required
-                    onChange={(e) => change({ timezone: e.target.value })}
-                  />
-                </label>
+                  {channels.map(({ id, label, Icon }) => (
+                    <button
+                      type="button"
+                      key={id}
+                      aria-pressed={profile.delivery_preference === id}
+                      onClick={() => change({ delivery_preference: id })}
+                    >
+                      <span className={`${styles.channelIcon} ${styles[id]}`}>
+                        <Icon size={23} strokeWidth={1.7} />
+                      </span>
+                      <span>{label}</span>
+                      {profile.delivery_preference === id && (
+                        <Check size={14} className={styles.selectedCheck} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <p className={styles.deliveryNote}>
+                  {channel.label} delivery is not connected yet. Your drafts
+                  will be available here in the app.
+                </p>
               </div>
-            </details>
-          )}
-          {starting && !enrolled && (
-            <label className={styles.consent}>
-              <input
-                type="checkbox"
-                checked={consent}
-                required
-                onChange={(e) => setConsent(e.target.checked)}
-              />
-              I opt in to AI drafting using my approved notes and writing
-              preferences. I can pause anytime.
-            </label>
+              {starting && (
+                <details
+                  className={styles.preferences}
+                  open={starting || undefined}
+                >
+                  <summary>
+                    Make it yours <ChevronRight size={14} />
+                  </summary>
+                  <div className={styles.fields}>
+                    <label>
+                      Drafts per day
+                      <select
+                        aria-label="Drafts per day"
+                        value={count}
+                        onChange={(e) =>
+                          change({ daily_count: Number(e.target.value) })
+                        }
+                      >
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Your role
+                      <input
+                        value={profile.role}
+                        required
+                        minLength={2}
+                        maxLength={120}
+                        placeholder="e.g. Founder, sales lead, engineer"
+                        onChange={(e) => change({ role: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Topics you talk about
+                      <input
+                        value={profile.topics.join(", ")}
+                        required
+                        placeholder="e.g. Customer stories, industry trends"
+                        onChange={(e) =>
+                          change({
+                            topics: e.target.value
+                              .split(",")
+                              .map((t) => t.trim()),
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Write for
+                      <select
+                        value={profile.platform}
+                        onChange={(e) =>
+                          change({
+                            platform: e.target.value as "linkedin" | "x",
+                          })
+                        }
+                      >
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="x">X</option>
+                      </select>
+                    </label>
+                    <label>
+                      Ready around
+                      <select
+                        value={profile.hour}
+                        onChange={(e) =>
+                          change({ hour: Number(e.target.value) })
+                        }
+                      >
+                        {Array.from({ length: 24 }, (_, h) => (
+                          <option key={h} value={h}>
+                            {String(h).padStart(2, "0")}:00
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Timezone
+                      <input
+                        value={profile.timezone}
+                        required
+                        onChange={(e) => change({ timezone: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                </details>
+              )}
+              {starting && !enrolled && (
+                <label className={styles.consent}>
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    required
+                    onChange={(e) => setConsent(e.target.checked)}
+                  />
+                  I opt in to AI drafting using my approved notes and writing
+                  preferences. I can pause anytime.
+                </label>
+              )}
+            </>
           )}
           <button
             className={styles.start}
@@ -239,32 +455,23 @@ export function DailyDraftSetup({
             }
           >
             {busy ? (
-              "Saving…"
+              "Working…"
             ) : saved ? (
               <>
-                Preferences saved <Check size={17} />
-              </>
-            ) : demo && !enrolled ? (
-              <>
-                Preview daily drafts <ArrowRight size={17} />
-              </>
-            ) : paused ? (
-              <>
-                Resume daily drafts <ArrowRight size={17} />
-              </>
-            ) : enrolled ? (
-              <>
-                Save daily drafts <ArrowRight size={17} />
+                Preferences saved <Check size={16} />
               </>
             ) : (
               <>
-                Start daily drafts <ArrowRight size={17} />
+                Make my content <ArrowRight size={16} />
               </>
             )}
           </button>
-          <p className={styles.review}>
-            All you need to do is review and publish.
-          </p>
+          {!starting && (
+            <p className={styles.deliveryNote}>
+              Delivery connections coming soon. Drafts are available in the app
+              today.
+            </p>
+          )}
           {enrolled && !paused && (
             <button
               type="button"
@@ -301,7 +508,6 @@ export function DailyDraftSetup({
         </fieldset>
       </form>
       <div className={styles.reassurance}>
-        <span>Fresh content to publish. Every day.</span>
         <p>
           <ShieldCheck size={14} />
           You’re in control. Nothing publishes automatically.
@@ -323,7 +529,9 @@ export function DailyDraftSetup({
           </button>
         )}
       </div>
-      {demo && <p className={styles.demo}>Sample workspace · Preview only</p>}
+      {demo && (
+        <p className={styles.demo}>Sample workspace · No live AI requests</p>
+      )}
     </div>
   );
 }

@@ -159,25 +159,28 @@ test("simple AI preferences save quantity and label unavailable delivery honestl
   await page.goto("/demo/ai");
   await expect(
     page.getByRole("heading", {
-      name: "Let AI draft your content",
+      name: "Let AI create your content.",
       exact: true,
     }),
   ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Make my content", exact: true })
+    .click();
   await expect(page.getByLabel("Drafts per day").locator("option")).toHaveCount(
     10,
   );
   await page.getByLabel("Drafts per day").selectOption("10");
-  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("button", { name: "Slack", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "WhatsApp", exact: true }),
+    page.getByRole("button", { name: "Slack", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
     page.getByText(
-      "WhatsApp delivery is not connected yet. Your drafts will be available here in the app.",
+      "Slack delivery is not connected yet. Your drafts will be available here in the app.",
     ),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Save daily drafts", exact: true })
+    .getByRole("button", { name: "Make my content", exact: true })
     .click();
   await expect(page.getByRole("status")).toContainText("10 drafts per day");
   expect(
@@ -194,5 +197,54 @@ test("simple AI preferences save quantity and label unavailable delivery honestl
   await page
     .getByRole("button", { name: "← Daily drafts", exact: true })
     .click();
+  await page
+    .getByRole("button", { name: "Make my content", exact: true })
+    .click();
   await expect(page.getByLabel("Drafts per day")).toHaveValue("10");
+});
+
+test("AI composer shows an honest sample response and preserves author review", async ({
+  page,
+}) => {
+  await page.goto("/demo/ai");
+  const send = page.getByRole("button", { name: "Draft my post", exact: true });
+  await expect(send).toBeDisabled();
+  await expect(
+    page.getByPlaceholder("Give me a topic and I’ll draft a post for you"),
+  ).toBeVisible();
+  await page
+    .getByLabel("Post topic", { exact: true })
+    .fill("How to make project handoffs clearer");
+  await send.click();
+  await expect(
+    page.getByText("Sample response", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/This is a prepared example, not an AI response/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Review this draft", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Post topic", { exact: true })).toHaveValue("");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await page
+    .getByRole("button", { name: "Review this draft", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Your drafts", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Copy approved post", exact: true }),
+  ).toHaveCount(0);
 });

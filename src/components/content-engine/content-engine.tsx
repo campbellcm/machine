@@ -71,6 +71,8 @@ export function ContentEngine({
     try {
       if (demo) {
         let output: Record<string, unknown> = { ok: true };
+        const sampleJobId = crypto.randomUUID();
+        if (operation === "chat") output.id = sampleJobId;
         setSample((previous) => {
           const next = structuredClone(previous);
           const d = next.drafts.find((d) => d.id === input.id);
@@ -118,13 +120,14 @@ export function ContentEngine({
             });
           } else if (operation === "dismiss")
             next.ideas = next.ideas.filter((i) => i.id !== input.id);
-          else if (operation === "generate") {
+          else if (operation === "generate" || operation === "chat") {
             const original = next.drafts[0] || contentDemo().drafts[0];
             next.drafts.unshift({
               ...structuredClone(original),
               id: crypto.randomUUID(),
               state: "ready_for_employee",
               revision: 1,
+              job_id: operation === "chat" ? sampleJobId : undefined,
             });
           } else if (d) {
             if (operation === "edit") {
@@ -190,7 +193,7 @@ export function ContentEngine({
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Please try again.");
       setMessage(
-        ["generate", "ideas", "source", "retry"].includes(operation)
+        ["generate", "chat", "ideas", "source", "retry"].includes(operation)
           ? "Added to your preparation queue. This page checks for updates automatically."
           : operation === "approve"
             ? "Your review was saved. Nothing has been published."

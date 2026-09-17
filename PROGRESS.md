@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M7 — simple daily AI draft setup.
+Current milestone: M8 — refined AI studio and topic composer.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -275,3 +275,12 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Delivery selection records a preference only: none of these four transports is connected, and each explicitly says drafts remain in the app. No phone number, credentials or new service connection is requested. Review never auto-publishes. This is a design/preference change, not a claim of implemented external delivery.
 - Independent review found possible misleading saved/resume states; corrected by clearing success state and disabling inputs during save, and requiring resume success.
 - Verification: 90 unit/database tests, typecheck, lint, production build and all 20 desktop/mobile browser tests passed on GitHub at 724a880. Hosted preview inspected in light/dark desktop and mobile; mobile document width is 390px with no overflow. Home, Team and Rewards regressions passed. Independent review cleared. PR #6 contains this release.
+
+
+## M8 — AI studio refinement
+
+- Replaced the sage setup card with the site's neutral surfaces, blue/purple accent typography, spacious composer and a compact secondary daily-drafts flow. Exact requested headline, topic placeholder and Make my content CTA; email/Slack/iMessage preferences now appear only when setting up daily drafts. Existing count 1–10 and profile controls remain accessible.
+- Topic composer uses an explicitly selectable approved opportunity and sends a bounded/redacted instruction through the existing authenticated, quota-limited generation command. An immediate job attempt reuses OpenAI Responses and existing evidence/consent checks; durable queue handles retries. Drafts are tracked by job ID and displayed inline before the unchanged author-review flow.
+- Demo response is a prepared example explicitly labeled as not generated for the topic. No public AI endpoint, personal ChatGPT account sign-in, new provider/model, migration, credential, or external delivery transport was added. API setup and real-account verification remain required.
+- Current official OpenAI structured-output documentation checked: https://developers.openai.com/api/docs/guides/structured-outputs . Existing Responses parse integration and configured model retained.
+- Validation: pending checks and independent review before release.
