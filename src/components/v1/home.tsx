@@ -145,7 +145,7 @@ export function HomeDashboard({
                     <div className="leader-person"><TeamAvatar name={p.name || "Teammate"} src={p.photo_url} /><div>
                     <strong>{p.name || "Teammate"}</strong>
                     <small>{p.role}</small>
-                    <span className="account-icons" aria-label="Connected accounts">{p.channels?.map(channel => <ChannelIcon key={channel} channel={channel} />)}</span>
+                    <span className="account-icons" role="group" aria-label="Connected accounts">{p.channels?.map(channel => <ChannelIcon key={channel} channel={channel} />)}</span>
                     </div></div>
                   </td>
                   {metrics.map(([k]) => (
