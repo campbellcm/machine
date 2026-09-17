@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crewcast | Turn your team into a marketing machine</title>
+<meta name="description" content="Crewcast turns your employees into an always-on marketing channel with AI interviews, leaderboards, rewards, trackable links, and automated reports.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --bg-alt:#f5f5f7; --tile:#ffffff; --text:#1d1d1f; --text-2:#6e6e73; --text-3:#86868b;
+  --line:#d2d2d7; --hair:#e8e8ed; --blue:#0071e3; --blue-hover:#0077ed; --link:#0066cc; --orange:#bf4800;
+  --nav:rgba(251,251,253,.78); --chip:#f5f5f7; --green:#1f9d55; --device:#ffffff; --device-side:#fafafc;
+  --ink:#000000; --ink-card:#1d1d1f; --ink-card-2:#2a2a2d; --ink-text:#f5f5f7; --ink-text-2:#a1a1a6; --ink-line:#3a3a3d;
+  --grad:linear-gradient(90deg,#2997ff 0%,#a259ff 40%,#ff375f 72%,#ff9f0a 100%);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --bg-alt:#161617; --tile:#1d1d1f; --text:#f5f5f7; --text-2:#a1a1a6; --text-3:#86868b;
+    --line:#424245; --hair:#2c2c2e; --blue:#0071e3; --blue-hover:#0077ed; --link:#2997ff; --orange:#ff791b;
+    --nav:rgba(22,22,23,.78); --chip:#2c2c2e; --green:#30d158; --device:#1d1d1f; --device-side:#18181a;
+    --ink:#000000; --ink-card:#1d1d1f; --ink-card-2:#2a2a2d; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --bg-alt:#161617; --tile:#1d1d1f; --text:#f5f5f7; --text-2:#a1a1a6; --text-3:#86868b;
+  --line:#424245; --hair:#2c2c2e; --blue:#0071e3; --blue-hover:#0077ed; --link:#2997ff; --orange:#ff791b;
+  --nav:rgba(22,22,23,.78); --chip:#2c2c2e; --green:#30d158; --device:#1d1d1f; --device-side:#18181a;
+  --ink:#000000; --ink-card:#1d1d1f; --ink-card-2:#2a2a2d; color-scheme:dark;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:17px;line-height:1.47;letter-spacing:-.022em;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg{max-width:100%;display:block}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:3px solid #2997ff;outline-offset:3px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{width:min(980px,100% - 44px);margin-inline:auto}
+.wrap-wide{width:min(1180px,100% - 32px);margin-inline:auto}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* Buttons and links */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--blue);color:#fff;border-radius:980px;padding:12px 22px;font-size:17px;font-weight:400;letter-spacing:-.02em;white-space:nowrap;transition:background .2s}
+.btn:hover{background:var(--blue-hover);text-decoration:none}
+.btn-sm{padding:5px 12px;font-size:12px;letter-spacing:-.01em}
+.more{display:inline-flex;align-items:center;gap:4px;font-size:17px}
+.more svg{width:9px;height:9px;transition:transform .2s}
+.more:hover svg{transform:translateX(2px)}
+
+/* Local nav */
+.nav{position:sticky;top:0;z-index:50;background:var(--nav);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--hair)}
+.nav-in{height:52px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:8px;color:var(--text);font-size:21px;font-weight:600;letter-spacing:-.02em}
+.brand:hover{text-decoration:none}
+.brand svg{width:22px;height:22px}
+.nav-links{display:flex;align-items:center;gap:24px;font-size:12px}
+.nav-links a{color:var(--text);opacity:.8}
+.nav-links a:hover{opacity:1;text-decoration:none}
+
+/* Sections */
+.sec{padding:120px 0}
+.sec-alt{background:var(--bg-alt)}
+.sec-ink{background:var(--ink);color:var(--ink-text)}
+.h-xl{font-size:clamp(44px,7.4vw,88px);line-height:1.04;font-weight:600;letter-spacing:-.035em}
+.h-lg{font-size:clamp(38px,5.6vw,64px);line-height:1.06;font-weight:600;letter-spacing:-.03em}
+.h-md{font-size:clamp(28px,3.4vw,40px);line-height:1.1;font-weight:600;letter-spacing:-.025em}
+.lede{font-size:clamp(19px,2.2vw,24px);line-height:1.35;font-weight:400;color:var(--text-2);letter-spacing:-.015em}
+.sec-ink .lede{color:var(--ink-text-2)}
+.center{text-align:center}
+.sec-head{max-width:760px;margin:0 auto 64px;text-align:center}
+.sec-head .lede{margin-top:18px}
+
+/* Hero */
+.hero{padding:88px 0 0;text-align:center;overflow:hidden}
+.hero-kicker{font-size:21px;font-weight:600;color:var(--orange);letter-spacing:-.015em;margin-bottom:10px}
+.hero h1{max-width:900px;margin:0 auto}
+.hero .lede{max-width:640px;margin:22px auto 0}
+.hero-cta{display:flex;gap:28px;justify-content:center;align-items:center;margin-top:34px;flex-wrap:wrap}
+.hero-stage{margin-top:72px;padding-bottom:0;position:relative}
+.hero-stage::before{content:"";position:absolute;inset:18% 6% -10% 6%;background:var(--grad);filter:blur(90px);opacity:.18;border-radius:50%;z-index:0}
+@media (prefers-reduced-motion:no-preference){
+  .hero-kicker,.hero h1,.hero .lede,.hero-cta{animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
+  .hero h1{animation-delay:.08s}.hero .lede{animation-delay:.18s}.hero-cta{animation-delay:.26s}
+  .device{animation:lift 1.2s cubic-bezier(.2,.8,.2,1) .35s both}
+}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes lift{from{opacity:0;transform:translateY(60px) scale(.97)}to{opacity:1;transform:none}}
+
+/* Device / app mockup */
+.device{position:relative;z-index:1;text-align:left;background:var(--device);border:1px solid var(--hair);border-bottom:0;border-radius:22px 22px 0 0;overflow:hidden;box-shadow:0 40px 120px -40px rgba(0,0,0,.35)}
+.win-bar{height:38px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--hair)}
+.win-bar i{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.win-bar span{margin-left:auto;margin-right:auto;font-size:12px;color:var(--text-3);transform:translateX(-24px)}
+.app{display:grid;grid-template-columns:64px 1fr 300px;min-height:470px}
+.app-side{background:var(--device-side);border-right:1px solid var(--hair);display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 0}
+.app-side span{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--text-3)}
+.app-side span.on{background:var(--chip);color:var(--text)}
+.app-side svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.app-main{padding:28px 30px 0;position:relative}
+.ch-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}
+.ch-top h3{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.ch-top p{font-size:14px;color:var(--text-2);margin-top:2px}
+.ch-prize{text-align:right;flex-shrink:0}
+.ch-prize b{display:block;font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.ch-prize small{font-size:12px;color:var(--text-3)}
+.lb-head,.lb-row{display:grid;grid-template-columns:28px 40px 1fr 64px 74px 64px;align-items:center;gap:10px}
+.lb-head{font-size:12px;color:var(--text-3);padding:0 12px 8px;border-bottom:1px solid var(--hair)}
+.lb-head span:nth-child(n+4),.lb-num{text-align:right}
+.lb-list{position:relative}
+.lb-row{padding:12px;border-bottom:1px solid var(--hair);background:var(--device);position:relative}
+.lb-rank{font-size:15px;font-weight:600;color:var(--text-3)}
+.lb-row:first-child .lb-rank{color:var(--text)}
+.lb-who strong{display:block;font-size:15px;font-weight:600;letter-spacing:-.015em}
+.lb-who small{display:block;font-size:12px;color:var(--text-3)}
+.lb-num{font-size:15px;font-variant-numeric:tabular-nums;color:var(--text-2)}
+.lb-leads{color:var(--text);font-weight:600}
+.lb-row.is-up{background:linear-gradient(90deg,rgba(41,151,255,.10),transparent 70%)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;color:#fff;letter-spacing:0;background:linear-gradient(135deg,var(--a),var(--b));flex-shrink:0}
+.av.sm{width:28px;height:28px;font-size:11px}
+.lb-toast{position:absolute;left:50%;bottom:22px;transform:translate(-50%,12px);opacity:0;background:var(--text);color:var(--bg);font-size:13px;padding:8px 14px;border-radius:980px;white-space:nowrap;transition:opacity .4s,transform .4s;pointer-events:none}
+.lb-toast.show{opacity:1;transform:translate(-50%,0)}
+.app-aside{border-left:1px solid var(--hair);padding:28px 24px;display:flex;flex-direction:column;gap:18px}
+.aside-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.tag{font-size:11px;font-weight:500;color:var(--text-3);background:var(--chip);padding:3px 8px;border-radius:980px}
+.stat small{display:block;font-size:12px;color:var(--text-3)}
+.stat b{display:block;font-size:28px;font-weight:600;letter-spacing:-.03em;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat em{font-style:normal;font-size:12px;color:var(--green)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.spark{width:100%;height:56px}
+
+/* Statement */
+.statement{padding:160px 0}
+.statement p.pre{font-size:clamp(21px,2.6vw,28px);line-height:1.3;color:var(--ink-text-2);max-width:720px;margin:0 auto 40px;font-weight:500;letter-spacing:-.02em}
+.statement h2{font-size:clamp(48px,8.6vw,112px);line-height:1;font-weight:700;letter-spacing:-.045em}
+.statement h2 span{display:block}
+
+/* Bento */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
+.tile{background:var(--tile);border-radius:28px;padding:40px;overflow:hidden;display:flex;flex-direction:column;min-height:420px}
+.tile h3{font-size:28px;line-height:1.14;font-weight:600;letter-spacing:-.025em}
+.tile p{color:var(--text-2);margin-top:10px;max-width:46ch}
+.tile .vis{margin-top:auto;padding-top:32px}
+.s2{grid-column:span 2}.s3{grid-column:span 3}.s4{grid-column:span 4}.s6{grid-column:span 6}
+.prize-big{font-size:clamp(88px,13vw,168px);line-height:.9;font-weight:700;letter-spacing:-.06em}
+.prize-cap{color:var(--text-2);font-size:17px;margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:14px;background:var(--chip);padding:8px 14px;border-radius:980px;color:var(--text)}
+.chip i{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.chip i.off{background:var(--line)}
+.ring-wrap{display:flex;align-items:center;gap:18px}
+.ring{width:96px;height:96px;flex-shrink:0}
+.ring-wrap b{display:block;font-size:17px;font-weight:600;letter-spacing:-.015em;line-height:1.3}
+.ring-wrap small{display:block;font-size:14px;color:var(--text-2);margin-top:4px}
+.podium{display:flex;align-items:flex-end;gap:10px;margin-top:22px;height:90px}
+.podium div{flex:1;border-radius:12px 12px 4px 4px;background:var(--chip);display:flex;align-items:flex-start;justify-content:center;padding-top:8px;font-size:13px;font-weight:600;color:var(--text-2)}
+.podium div:nth-child(2){background:var(--grad);color:#fff}
+.bars{width:100%;height:150px}
+.link-pill{display:flex;align-items:center;gap:10px;background:var(--chip);border-radius:14px;padding:14px 16px;font-size:15px;font-variant-numeric:tabular-nums;overflow:hidden}
+.link-pill svg{width:18px;height:18px;flex-shrink:0;fill:none;stroke:var(--link);stroke-width:2;stroke-linecap:round}
+.link-pill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-stats{display:flex;gap:28px;margin-top:18px}
+.link-stats b{display:block;font-size:32px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.link-stats small{font-size:13px;color:var(--text-3)}
+.ideas{list-style:none;display:flex;flex-direction:column}
+.ideas li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--hair);font-size:15px}
+.heat{display:flex;gap:3px;align-items:flex-end;height:18px;flex-shrink:0}
+.heat i{width:4px;border-radius:2px;background:var(--line)}
+.heat i.h{background:var(--link)}
+.mirror{display:grid;grid-template-columns:1fr 28px 1fr;align-items:center;gap:10px}
+.post{background:var(--chip);border-radius:16px;padding:16px;font-size:14px;min-height:170px;display:flex;flex-direction:column;gap:10px}
+.post-top{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2);font-weight:500}
+.seg{display:block;font-size:12px;color:var(--text-2);padding:6px 10px;border-radius:8px;background:var(--tile)}
+.segs{display:flex;flex-direction:column;gap:6px}
+.post p{color:var(--text);margin:0;font-size:14px;line-height:1.4}
+.post-meta{font-size:12px;color:var(--text-3);margin-top:auto}
+.mirror-arrow svg{width:28px;height:28px;fill:none;stroke:var(--text-3);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.report{display:grid;grid-template-columns:1fr 1.1fr;gap:48px;align-items:center;min-height:0}
+.report .vis{padding-top:0;margin-top:0}
+.mail{background:var(--chip);border-radius:20px;padding:22px 24px}
+.mail-top{display:flex;justify-content:space-between;font-size:13px;color:var(--text-3)}
+.mail h4{font-size:19px;font-weight:600;letter-spacing:-.02em;margin:6px 0 16px}
+.mail-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.mail-row b{font-weight:600;font-variant-numeric:tabular-nums}
+.mail-row em{font-style:normal;color:var(--green);font-size:13px;margin-left:8px}
+
+/* Split deep dives */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.split .lede{margin-top:20px}
+.checks{list-style:none;margin-top:30px;display:flex;flex-direction:column;gap:12px}
+.checks li{display:flex;gap:12px;align-items:center;font-size:17px}
+.checks svg{width:20px;height:20px;flex-shrink:0;fill:none;stroke:var(--green);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sec-ink .checks li{color:var(--ink-text)}
+
+.chat{background:var(--ink-card);border-radius:28px;padding:26px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--ink-line)}
+.chat-head{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-text-2);padding-bottom:12px;border-bottom:1px solid var(--ink-line)}
+.chat-head strong{color:var(--ink-text);font-weight:600}
+.chat-head .live{width:8px;height:8px;border-radius:50%;background:#ff453a}
+.chat-head .t{margin-left:auto}
+.msg{max-width:86%;padding:12px 16px;border-radius:20px;font-size:15px;line-height:1.4}
+.msg.ai{background:var(--ink-card-2);color:var(--ink-text);border-bottom-left-radius:6px}
+.msg.me{align-self:flex-end;background:#0a84ff;color:#fff;border-bottom-right-radius:6px;display:flex;align-items:center;gap:12px}
+.play{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;flex-shrink:0}
+.play svg{width:11px;height:11px;fill:#fff}
+.wave{display:flex;align-items:center;gap:2px;height:24px}
+.wave i{width:3px;border-radius:2px;background:rgba(255,255,255,.85)}
+.draft{background:var(--ink-card-2);border-radius:18px;padding:18px;border:1px solid var(--ink-line)}
+.draft-top{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-text-2);margin-bottom:8px}
+.draft p{font-size:15px;line-height:1.45;color:var(--ink-text)}
+.draft-actions{display:flex;gap:8px;margin-top:14px}
+.pill{font-size:13px;padding:7px 14px;border-radius:980px;background:#3a3a3d;color:var(--ink-text)}
+.pill.blue{background:#0071e3;color:#fff}
+
+.queue{background:var(--tile);border-radius:28px;padding:10px 24px 20px;border:1px solid var(--hair)}
+.sec-alt .queue{border-color:transparent}
+.q-head{display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-size:14px;color:var(--text-2)}
+.q-head strong{color:var(--text);font-weight:600;font-size:17px}
+.q-item{display:grid;grid-template-columns:36px 1fr auto;gap:14px;padding:18px 0;border-top:1px solid var(--hair);align-items:start}
+.q-meta{font-size:12px;color:var(--text-3);margin-bottom:3px}
+.q-meta b{color:var(--text);font-weight:600;font-size:14px;margin-right:6px}
+.q-text{font-size:15px;line-height:1.4}
+.approve{font-size:13px;padding:7px 14px;border-radius:980px;background:var(--blue);color:#fff;display:inline-flex;align-items:center;gap:6px;transition:background .25s,color .25s}
+.approve svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;display:none}
+.approve[aria-pressed="true"]{background:var(--chip);color:var(--green)}
+.approve[aria-pressed="true"] svg{display:block}
+
+/* Rewards payout card */
+.payout{background:var(--tile);border:1px solid var(--hair);border-radius:28px;padding:30px}
+.po-top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;color:var(--text-2)}
+.po-top strong{color:var(--text);font-weight:600;font-size:17px}
+.po-private{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);background:var(--chip);padding:5px 10px;border-radius:980px;white-space:nowrap}
+.po-private svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.po-winner{display:flex;align-items:center;gap:14px;margin:26px 0 6px}
+.po-winner strong{display:block;font-size:19px;font-weight:600;letter-spacing:-.02em}
+.po-winner small{display:block;font-size:14px;color:var(--text-2)}
+.po-amount{font-size:clamp(48px,6vw,64px);font-weight:600;letter-spacing:-.045em;line-height:1;margin-top:18px;font-variant-numeric:tabular-nums}
+.po-type{font-size:14px;color:var(--text-2);margin-top:6px}
+.po-steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:26px 0 22px}
+.po-steps li{font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:8px;line-height:1.3}
+.po-steps li::before{content:"";height:4px;border-radius:2px;background:var(--hair);transition:background .4s}
+.po-steps li.done{color:var(--text)}
+.po-steps li.done::before{background:var(--green)}
+.po-actions{display:flex;justify-content:space-between;align-items:center;gap:14px;border-top:1px solid var(--hair);padding-top:18px}
+.po-note{font-size:14px;color:var(--text-2)}
+.po-actions .btn{padding:9px 18px;font-size:15px}
+.po-actions .btn[disabled]{background:var(--chip);color:var(--green);cursor:default}
+.crm-row{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:22px}
+
+/* Steps */
+.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;counter-reset:s}
+.steps li{background:var(--tile);border-radius:24px;padding:32px 28px}
+.steps li::before{counter-increment:s;content:counter(s);display:block;font-size:56px;font-weight:700;letter-spacing:-.05em;line-height:1;margin-bottom:28px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;width:max-content}
+.steps h3{font-size:21px;font-weight:600;letter-spacing:-.02em}
+.steps p{color:var(--text-2);margin-top:8px;font-size:15px;line-height:1.45}
+
+/* Funnel */
+.funnel{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.f-row{display:grid;grid-template-columns:150px 1fr 110px;align-items:center;gap:20px}
+.f-row span{font-size:17px;color:var(--text-2)}
+.f-bar{height:52px;border-radius:14px;background:var(--grad);transform-origin:left center}
+.f-row b{text-align:right;font-size:24px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.f-note{text-align:center;font-size:12px;color:var(--text-3);margin-top:28px}
+
+/* Trust */
+.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:40px}
+.trust h3{font-size:21px;font-weight:600;letter-spacing:-.02em;margin-top:18px}
+.trust p{color:var(--ink-text-2);margin-top:8px;font-size:15px;line-height:1.5}
+.trust svg{width:34px;height:34px;fill:none;stroke:var(--ink-text);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* FAQ */
+.faq{max-width:780px;margin:0 auto}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:24px 0;font-size:21px;font-weight:600;letter-spacing:-.02em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary svg{width:16px;height:16px;flex-shrink:0;fill:none;stroke:var(--text-2);stroke-width:2;stroke-linecap:round;transition:transform .3s}
+.faq details[open] summary svg{transform:rotate(45deg)}
+.faq details p{color:var(--text-2);padding:0 40px 26px 0;max-width:68ch}
+
+/* Pricing */
+.billing{display:flex;justify-content:center;margin:-28px 0 36px}
+.seg-toggle{display:inline-flex;background:var(--tile);border:1px solid var(--hair);border-radius:980px;padding:4px}
+.seg-toggle button{padding:9px 20px;border-radius:980px;font-size:14px;color:var(--text-2);transition:background .25s,color .25s}
+.seg-toggle button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+.seg-toggle .save{font-size:12px;margin-left:6px;color:var(--green)}
+.seats{max-width:480px;margin:0 auto 52px;text-align:center}
+.seats label{display:block;font-size:15px;color:var(--text-2);margin-bottom:12px}
+.seats output{font-weight:600;color:var(--text)}
+.seats input{width:100%;accent-color:var(--blue);height:24px;cursor:pointer}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+.plan{background:var(--tile);border:2px solid transparent;border-radius:28px;padding:40px 34px;display:flex;flex-direction:column}
+.plan.pop{background:linear-gradient(var(--tile),var(--tile)) padding-box,var(--grad) border-box}
+.plan-badge{font-size:14px;font-weight:600;color:var(--orange);min-height:21px;margin-bottom:6px}
+.plan h3{font-size:32px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.plan-desc{color:var(--text-2);font-size:15px;margin-top:8px;min-height:44px}
+.price{display:flex;align-items:baseline;gap:8px;margin-top:28px;min-height:62px}
+.price b{font-size:56px;font-weight:600;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}
+.price b.custom{font-size:44px}
+.price span{font-size:14px;color:var(--text-2);line-height:1.3}
+.price-note{font-size:13px;color:var(--text-3);margin-top:10px;min-height:40px}
+.plan .btn{margin-top:22px;width:100%}
+.btn-ghost{background:transparent;color:var(--link);box-shadow:inset 0 0 0 1px var(--link)}
+.btn-ghost:hover{background:transparent;box-shadow:inset 0 0 0 2px var(--link)}
+.plan-list{list-style:none;margin-top:30px;padding-top:26px;border-top:1px solid var(--hair);display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.4}
+.plan-list li{display:flex;gap:10px;align-items:flex-start}
+.plan-list li.inc{font-weight:600}
+.plan-list svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;fill:none;stroke:var(--green);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.price-fine{text-align:center;font-size:13px;color:var(--text-3);max-width:640px;margin:36px auto 0}
+
+/* CTA */
+.cta{padding:160px 0;text-align:center}
+.waitlist{display:flex;gap:10px;max-width:520px;margin:44px auto 0;background:var(--ink-card);border:1px solid var(--ink-line);border-radius:980px;padding:6px}
+.waitlist input{flex:1;min-width:0;background:transparent;border:0;color:var(--ink-text);font:inherit;font-size:17px;padding:0 18px;outline:none}
+.waitlist input::placeholder{color:var(--ink-text-2)}
+.waitlist:focus-within{border-color:#2997ff}
+.wl-msg{min-height:24px;margin-top:16px;font-size:15px;color:var(--ink-text-2)}
+.wl-msg.ok{color:#30d158}
+.wl-msg.err{color:#ff6961}
+
+/* Footer */
+.foot{background:var(--bg-alt);color:var(--text-2);font-size:12px;line-height:1.5;padding:40px 0 28px}
+.fine{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:24px;display:flex;flex-direction:column;gap:10px}
+.foot-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:28px}
+.foot-cols h4{color:var(--text);font-weight:600;font-size:12px;margin-bottom:8px}
+.foot-cols a{display:block;color:var(--text-2);margin-bottom:6px}
+.foot-base{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+
+/* Responsive */
+@media (max-width:1068px){
+  .app{grid-template-columns:64px 1fr}
+  .app-aside{grid-column:1 / -1;border-left:0;border-top:1px solid var(--hair);flex-direction:row;flex-wrap:wrap}
+  .app-aside > *{flex:1 1 220px}
+  .bento{grid-template-columns:repeat(2,1fr)}
+  .s2,.s3{grid-column:span 1}.s4,.s6{grid-column:span 2}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .trust{grid-template-columns:repeat(2,1fr)}
+  .split{gap:48px}
+  .plans{grid-template-columns:1fr;max-width:560px;margin-inline:auto}
+  .plan-desc,.price-note{min-height:0}
+}
+@media (max-width:734px){
+  body{font-size:16px}
+  .sec{padding:84px 0}
+  .statement,.cta{padding:110px 0}
+  .nav-links a{display:none}
+  .hero{padding-top:56px}
+  .hero-stage{margin-top:52px}
+  .app{grid-template-columns:1fr;min-height:0}
+  .app-side{display:none}
+  .app-main{padding:22px 16px 0}
+  .ch-top h3{font-size:19px}
+  .ch-prize b{font-size:24px}
+  .lb-head,.lb-row{grid-template-columns:22px 36px 1fr 52px}
+  .hide-sm{display:none}
+  .app-aside{flex-direction:column;padding:22px 16px}
+  .bento{grid-template-columns:1fr;gap:14px}
+  .s2,.s3,.s4,.s6{grid-column:span 1}
+  .tile{padding:30px 24px;min-height:0;border-radius:24px}
+  .tile h3{font-size:24px}
+  .report{grid-template-columns:1fr;gap:28px}
+  .report .vis{padding-top:0}
+  .mirror{grid-template-columns:1fr}
+  .mirror-arrow{justify-self:center;transform:rotate(90deg)}
+  .split{grid-template-columns:1fr}
+  .split-rev .split-copy{order:-1}
+  .steps{grid-template-columns:1fr}
+  .trust{grid-template-columns:1fr;gap:34px}
+  .f-row{grid-template-columns:1fr 90px;gap:8px 14px}
+  .f-row span{grid-column:1 / -1}
+  .f-bar{height:38px}
+  .po-actions{flex-direction:column;align-items:stretch}
+  .po-steps{grid-template-columns:repeat(2,1fr)}
+  .f-row b{font-size:19px}
+  .waitlist{flex-direction:column;border-radius:22px;padding:8px}
+  .waitlist input{padding:12px 14px;text-align:center}
+  .foot-cols{grid-template-columns:repeat(2,1fr)}
+  .plan{padding:32px 24px;border-radius:24px}
+  .seg-toggle button{padding:9px 14px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Crewcast">
+  <div class="wrap-wide nav-in">
+    <a class="brand" href="#top" aria-label="Crewcast home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="lg" x1="0" x2="1" y1="1" y2="0"><stop offset="0" stop-color="#2997ff"/><stop offset=".5" stop-color="#a259ff"/><stop offset="1" stop-color="#ff375f"/></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="6" fill="url(#lg)"/><circle cx="8" cy="16" r="2" fill="#fff"/><path d="M8 10.5a5.5 5.5 0 0 1 5.5 5.5M8 6a10 10 0 0 1 10 10" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      Crewcast
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#interview">Interviews</a>
+      <a href="#autopilot">Autopilot</a>
+      <a href="#rewards">Rewards</a>
+      <a href="#results">Results</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn-sm" href="#join">Get early access</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <p class="hero-kicker">Crewcast</p>
+    <h1 class="h-xl">Turn your team into a marketing machine.</h1>
+    <p class="lede">More views, leads, and sales from the people who already know your company best. Your employees.</p>
+    <div class="hero-cta">
+      <a class="btn" href="#join">Get early access</a>
+      <a class="more" href="#how">See how it works <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </div>
+
+  <div class="wrap-wide hero-stage">
+    <div class="device" id="device" role="img" aria-label="Crewcast dashboard showing a monthly posting challenge with a $2,500 bonus and a live team leaderboard">
+      <div class="win-bar" aria-hidden="true"><i></i><i></i><i></i><span>Crewcast</span></div>
+      <div class="app" aria-hidden="true">
+        <div class="app-side">
+          <span><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>
+          <span class="on"><svg viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 0 1-8 0V4zM8 5H5a3 3 0 0 0 3 4M16 5h3a3 3 0 0 1-3 4M12 12v4M8 20h8M10 16h4v4h-4z"/></svg></span>
+          <span><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
+          <span><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+          <span><svg viewBox="0 0 24 24"><path d="M5 20V11M11 20V5M17 20v-6M3 20h18"/></svg></span>
+          <span><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span>
+        </div>
+
+        <div class="app-main">
+          <div class="ch-top">
+            <div>
+              <h3>September challenge</h3>
+              <p>Most leads wins. Only your team can see this.</p>
+            </div>
+            <div class="ch-prize"><b class="grad">$2,500</b><small>Team bonus, 12 days left</small></div>
+          </div>
+          <div class="lb-head"><span></span><span></span><span>Teammate</span><span class="hide-sm">Posts</span><span class="hide-sm">Reach</span><span>Leads</span></div>
+          <div class="lb-list" id="lb">
+            <div class="lb-row" data-id="marcus"><span class="lb-rank">1</span><span class="av" style="--a:#30d158;--b:#0a84ff">ML</span><span class="lb-who"><strong>Marcus Lee</strong><small>Solutions Engineer</small></span><span class="lb-num hide-sm">16</span><span class="lb-num hide-sm">92.8K</span><span class="lb-num lb-leads">41</span></div>
+            <div class="lb-row" data-id="priya"><span class="lb-rank">2</span><span class="av" style="--a:#ff9f0a;--b:#ff375f">PR</span><span class="lb-who"><strong>Priya Raman</strong><small>Account Executive</small></span><span class="lb-num hide-sm" data-k="posts">14</span><span class="lb-num hide-sm" data-k="reach">86.2K</span><span class="lb-num lb-leads" data-k="leads">38</span></div>
+            <div class="lb-row" data-id="dana"><span class="lb-rank">3</span><span class="av" style="--a:#bf5af2;--b:#5e5ce6">DO</span><span class="lb-who"><strong>Dana Ortiz</strong><small>Head of Customer Success</small></span><span class="lb-num hide-sm">11</span><span class="lb-num hide-sm">64.5K</span><span class="lb-num lb-leads">29</span></div>
+            <div class="lb-row" data-id="sam"><span class="lb-rank">4</span><span class="av" style="--a:#64d2ff;--b:#5e5ce6">SW</span><span class="lb-who"><strong>Sam Whitfield</strong><small>Product Designer</small></span><span class="lb-num hide-sm">9</span><span class="lb-num hide-sm">41.0K</span><span class="lb-num lb-leads">22</span></div>
+          </div>
+          <div class="lb-toast" id="toast">Priya just took the lead</div>
+        </div>
+
+        <div class="app-aside">
+          <div>
+            <div class="aside-title">Team results <span class="tag">Sample data</span></div>
+            <div class="stat" style="margin-top:14px"><small>Views this month</small><b>1.2M</b><em>+24% vs August</em></div>
+            <svg class="spark" viewBox="0 0 240 56" preserveAspectRatio="none"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#2997ff"/><stop offset="1" stop-color="#ff375f"/></linearGradient></defs><polyline fill="none" stroke="url(#sg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="0,48 24,44 48,46 72,38 96,40 120,30 144,32 168,22 192,24 216,12 240,6"/></svg>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><small>Link clicks</small><b>18.4K</b></div>
+            <div class="stat"><small>Leads</small><b>312</b></div>
+            <div class="stat"><small>Demos booked</small><b>74</b></div>
+            <div class="stat"><small>Pipeline</small><b>$486K</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Statement -->
+<section class="sec-ink statement center">
+  <div class="wrap">
+    <p class="pre">Your team members know your company better than anyone else. There is no one better to promote your business than your own employees.</p>
+    <h2><span>They have the context.</span><span class="grad">Now turn it into content.</span></h2>
+  </div>
+</section>
+
+<!-- Features bento -->
+<section class="sec sec-alt" id="features">
+  <div class="wrap-wide">
+    <div class="sec-head">
+      <h2 class="h-lg">Everything it takes to get your whole team posting.</h2>
+      <p class="lede">Connect accounts, spark ideas, reward the wins, and see exactly what it did for the business.</p>
+    </div>
+
+    <div class="bento">
+      <article class="tile s4">
+        <h3>Rewards that move people.</h3>
+        <p>You choose the reward and the amount, or skip rewards entirely. The teammate with the most impressions or leads wins, and the whole program stays inside your company.</p>
+        <div class="vis">
+          <div class="prize-big grad">$2,500</div>
+          <p class="prize-cap">Example: September bonus for most leads</p>
+          <div class="chips" style="margin-top:22px"><span class="chip">Cash bonus</span><span class="chip">Extra PTO day</span><span class="chip">Team dinner</span><span class="chip">Gift cards</span><span class="chip">Custom reward</span></div>
+        </div>
+      </article>
+
+      <article class="tile s2">
+        <h3>Leaderboards and challenges.</h3>
+        <p>Friendly competition, updated live.</p>
+        <div class="vis">
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#2997ff"/><stop offset="1" stop-color="#ff375f"/></linearGradient></defs><circle cx="48" cy="48" r="38" fill="none" stroke="var(--chip)" stroke-width="10"/><circle cx="48" cy="48" r="38" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="79.6" transform="rotate(-90 48 48)"/><text x="48" y="54" text-anchor="middle" font-size="19" font-weight="600" fill="currentColor" font-family="inherit">2/3</text></svg>
+            <div><b>Share 3 customer stories this week</b><small>Unlocks the Storyteller badge</small></div>
+          </div>
+          <div class="podium" aria-hidden="true"><div style="height:62%">2</div><div style="height:100%">1</div><div style="height:44%">3</div></div>
+        </div>
+      </article>
+
+      <article class="tile s2">
+        <h3>Connect every account.</h3>
+        <p>Your team links their profiles in about a minute. They stay in control of what posts.</p>
+        <div class="vis chips">
+          <span class="chip"><i></i>LinkedIn</span><span class="chip"><i></i>X</span><span class="chip"><i></i>Instagram</span><span class="chip"><i></i>TikTok</span><span class="chip"><i class="off"></i>YouTube</span><span class="chip"><i class="off"></i>Threads</span>
+        </div>
+      </article>
+
+      <article class="tile s2">
+        <h3>Track performance.</h3>
+        <p>Impressions, clicks, and leads for every person and every post.</p>
+        <div class="vis">
+          <svg class="bars" viewBox="0 0 280 150" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bg1" x1="0" x2="0" y1="1" y2="0"><stop offset="0" stop-color="#2997ff"/><stop offset="1" stop-color="#a259ff"/></linearGradient></defs>
+            <rect x="4" y="96" width="30" height="54" rx="7" fill="var(--chip)"/><rect x="44" y="80" width="30" height="70" rx="7" fill="var(--chip)"/><rect x="84" y="88" width="30" height="62" rx="7" fill="var(--chip)"/><rect x="124" y="62" width="30" height="88" rx="7" fill="var(--chip)"/><rect x="164" y="48" width="30" height="102" rx="7" fill="var(--chip)"/><rect x="204" y="30" width="30" height="120" rx="7" fill="url(#bg1)"/><rect x="244" y="12" width="30" height="138" rx="7" fill="url(#bg1)"/>
+          </svg>
+        </div>
+      </article>
+
+      <article class="tile s2">
+        <h3>Trackable links.</h3>
+        <p>Every teammate gets their own links. Leads and closed deals sync back from your CRM with a name on them.</p>
+        <div class="vis">
+          <div class="link-pill"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>crew.link/priya/fall-demo</span></div>
+          <div class="link-stats"><div><b>214</b><small>Clicks</small></div><div><b>9</b><small>Demos booked</small></div></div>
+        </div>
+      </article>
+
+      <article class="tile s3">
+        <h3>Fresh ideas, served daily.</h3>
+        <p>Crewcast suggests topics that fit each person's role, drawn from your launches, customer wins, and point of view.</p>
+        <div class="vis">
+          <ul class="ideas">
+            <li>What I learned from 100 customer calls <span class="heat" aria-label="Rising fast"><i class="h" style="height:6px"></i><i class="h" style="height:11px"></i><i class="h" style="height:18px"></i></span></li>
+            <li>Behind the scenes of a product launch <span class="heat" aria-label="Rising"><i class="h" style="height:6px"></i><i class="h" style="height:11px"></i><i style="height:18px"></i></span></li>
+            <li>The tool our team cannot live without <span class="heat" aria-label="Steady"><i class="h" style="height:6px"></i><i style="height:11px"></i><i style="height:18px"></i></span></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="tile s3">
+        <h3>Mirror what works.</h3>
+        <p>Spot a post that is taking off, then borrow its structure, not its words. One tap rebuilds it around your own story.</p>
+        <div class="vis mirror">
+          <div class="post">
+            <div class="post-top">Trending post</div>
+            <div class="segs"><span class="seg">Hook</span><span class="seg">Personal story</span><span class="seg">Lesson</span><span class="seg">Question</span></div>
+            <div class="post-meta">48K reactions</div>
+          </div>
+          <div class="mirror-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+          <div class="post">
+            <div class="post-top"><span class="av sm" style="--a:#bf5af2;--b:#5e5ce6">DO</span>Your version</div>
+            <p>I almost lost our biggest account in March. One honest email saved it. Here is what I wrote.</p>
+            <div class="post-meta">Draft in Dana's voice</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="tile s6 report">
+        <div>
+          <h3>Reports that write themselves.</h3>
+          <p>Every Monday, leadership gets a clear summary of reach, leads, top posts, and who is winning. No spreadsheets, no chasing.</p>
+        </div>
+        <div class="vis">
+          <div class="mail">
+            <div class="mail-top"><span>Crewcast</span><span>Monday, 9:00 AM</span></div>
+            <h4>Your weekly team report</h4>
+            <div class="mail-row"><span>Views</span><span><b>212K</b><em>+18%</em></span></div>
+            <div class="mail-row"><span>Leads from team links</span><span><b>64</b><em>+11</em></span></div>
+            <div class="mail-row"><span>Top post</span><span><b>Dana's onboarding story</b></span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Interview -->
+<section class="sec sec-ink" id="interview">
+  <div class="wrap-wide split">
+    <div class="split-copy">
+      <h2 class="h-lg">The interview.<br>Your best content starts with a conversation.</h2>
+      <p class="lede">Most people have great stories and no time to write. Crewcast asks each teammate smart questions about their week by chat or voice, then turns the answers into posts that sound exactly like them.</p>
+      <ul class="checks">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Answer by voice or text, whenever it suits</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Questions tuned to each role</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Several drafts from every answer</li>
+      </ul>
+    </div>
+    <div class="chat" aria-label="Example interview between Crewcast and a team member">
+      <div class="chat-head"><span class="live" aria-hidden="true"></span><strong>Interview with Marcus Lee</strong><span class="t">6 min</span></div>
+      <div class="msg ai">What is one customer problem you solved this month that surprised you?</div>
+      <div class="msg me"><span class="play" aria-hidden="true"><svg viewBox="0 0 10 12"><path d="M0 0l10 6-10 6z"/></svg></span><span class="wave" id="wave" aria-hidden="true"></span><span>0:42</span></div>
+      <div class="msg ai">Great story. I turned it into three drafts in your voice.</div>
+      <div class="draft">
+        <div class="draft-top"><span>Draft 1 of 3</span><span>LinkedIn</span></div>
+        <p>A customer told me their last vendor took three weeks to get them live. We did it in an afternoon. Here is the boring checklist that made it possible.</p>
+        <div class="draft-actions"><span class="pill">Edit</span><span class="pill blue">Send for approval</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Autopilot -->
+<section class="sec" id="autopilot">
+  <div class="wrap-wide split split-rev">
+    <div class="queue">
+      <div class="q-head"><strong>This week's queue</strong><span id="qcount">0 of 3 approved</span></div>
+      <div class="q-item">
+        <span class="av" style="--a:#ff9f0a;--b:#ff375f">PR</span>
+        <div><div class="q-meta"><b>Priya Raman</b>LinkedIn, Tue 8:30 AM</div><p class="q-text">Three questions I ask on every discovery call, and why the third one changes the whole conversation.</p></div>
+        <button class="approve" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>Approve</span></button>
+      </div>
+      <div class="q-item">
+        <span class="av" style="--a:#64d2ff;--b:#5e5ce6">SW</span>
+        <div><div class="q-meta"><b>Sam Whitfield</b>Instagram, Wed 12:00 PM</div><p class="q-text">From sketch to shipped: how our new dashboard came together in six weeks.</p></div>
+        <button class="approve" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>Approve</span></button>
+      </div>
+      <div class="q-item">
+        <span class="av" style="--a:#30d158;--b:#0a84ff">JK</span>
+        <div><div class="q-meta"><b>Jordan Kim</b>X, Thu 9:15 AM</div><p class="q-text">We just signed our 100th customer. The first ten taught us the most. A thread.</p></div>
+        <button class="approve" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span>Approve</span></button>
+      </div>
+    </div>
+    <div class="split-copy">
+      <h2 class="h-lg">Autopilot.<br>Built on what makes your company, your company.</h2>
+      <p class="lede">Crewcast's AI learns your brand, your launches, and each person's voice. It turns every conversation into ready-to-post drafts and schedules them at the best time. People just tap approve.</p>
+      <ul class="checks" style="color:var(--text)">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Your brand voice guide</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Product launches and updates</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Customer wins and case studies</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Each teammate's past posts and tone</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="sec sec-alt" id="how">
+  <div class="wrap-wide">
+    <div class="sec-head">
+      <h2 class="h-lg">Up and running in an afternoon.</h2>
+    </div>
+    <ol class="steps">
+      <li><h3>Connect</h3><p>Teammates link their social accounts. You set goals, rewards, and guardrails.</p></li>
+      <li><h3>Interview</h3><p>Crewcast chats with each person and turns their answers into drafts in their voice.</p></li>
+      <li><h3>Publish</h3><p>Approve, tweak, or let autopilot schedule posts at the best time for each network.</p></li>
+      <li><h3>Reward</h3><p>Leaderboards update live, winners are paid through your payroll, and your report shows what drove pipeline.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- Rewards -->
+<section class="sec" id="rewards">
+  <div class="wrap-wide split">
+    <div class="split-copy">
+      <h2 class="h-lg">Rewards.<br>Your program, your rules.</h2>
+      <p class="lede">Offer a cash bonus, an extra day off, or nothing but bragging rights. Set any amount, pick the metric, and let the leaderboard do the rest. When the month ends, approve the winner and the bonus goes out with your payroll.</p>
+      <ul class="checks" style="color:var(--text)">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Win on impressions, leads, or closed deals</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Visible only to your team</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Approvals before any payout</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Paid through the payroll you already use</li>
+      </ul>
+    </div>
+    <div class="payout" aria-label="Example reward payout moving through approval and payroll">
+      <div class="po-top"><strong>September lead challenge</strong><span class="po-private"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Internal only</span></div>
+      <div class="po-winner"><span class="av" style="--a:#ff9f0a;--b:#ff375f">PR</span><div><strong>Priya Raman</strong><small>Winner with 44 leads</small></div></div>
+      <div class="po-amount">$2,500.00</div>
+      <p class="po-type">Cash bonus</p>
+      <ol class="po-steps" id="poSteps">
+        <li class="done">Challenge ended</li>
+        <li>Approved</li>
+        <li>Sent to payroll</li>
+        <li>Paid</li>
+      </ol>
+      <div class="po-actions">
+        <span class="po-note" id="poNote" role="status" aria-live="polite">Waiting for admin approval.</span>
+        <button class="btn" type="button" id="poBtn">Approve payout</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="sec sec-alt" id="results">
+  <div class="wrap-wide">
+    <div class="sec-head">
+      <h2 class="h-lg">From post to pipeline.<br>Every step, measured.</h2>
+      <p class="lede">Trackable links and CRM sync connect each view and click to the leads and revenue that followed. So you know which people, posts, and topics actually grow the business.</p>
+      <div class="crm-row"><span class="chip">Syncs with HubSpot</span><span class="chip">Syncs with Salesforce</span></div>
+    </div>
+    <div class="funnel" id="funnel">
+      <div class="f-row"><span>Views</span><div class="f-bar" style="width:100%"></div><b>1.2M</b></div>
+      <div class="f-row"><span>Link clicks</span><div class="f-bar" style="width:72%"></div><b>18.4K</b></div>
+      <div class="f-row"><span>Leads</span><div class="f-bar" style="width:48%"></div><b>312</b></div>
+      <div class="f-row"><span>Deals won</span><div class="f-bar" style="width:28%"></div><b>27</b></div>
+      <div class="f-row"><span>Revenue</span><div class="f-bar" style="width:40%"></div><b>$486K</b></div>
+    </div>
+    <p class="f-note">Illustrative figures for a sample 150-person company. Bars not to scale.</p>
+  </div>
+</section>
+
+<!-- Trust -->
+<section class="sec sec-ink">
+  <div class="wrap-wide">
+    <div class="sec-head">
+      <h2 class="h-lg">Authentic by design.</h2>
+      <p class="lede">Employee voices only work when they are real. Crewcast keeps every person in charge of their own name.</p>
+    </div>
+    <div class="trust">
+      <div><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><h3>Opt in, never forced.</h3><p>Each teammate chooses to join and decides which accounts Crewcast can use.</p></div>
+      <div><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg><h3>Nothing posts without a yes.</h3><p>Autopilot drafts and schedules. The person whose name is on it approves what goes out.</p></div>
+      <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><h3>Disclosure built in.</h3><p>Every post makes clear the author works at your company. Your reward programs stay private to your team.</p></div>
+      <div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><h3>Guardrails for admins.</h3><p>Set approved topics, blocked phrases, and review steps for legal or regulated teams.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="sec sec-alt" id="pricing">
+  <div class="wrap-wide">
+    <div class="sec-head">
+      <h2 class="h-lg">Pick the plan that fits your team.</h2>
+      <p class="lede">Simple per-teammate pricing. Only pay for the people who opt in.</p>
+    </div>
+
+    <div class="billing">
+      <div class="seg-toggle" role="group" aria-label="Billing period">
+        <button type="button" data-bill="annual" aria-pressed="true">Annual<span class="save">Save 20%</span></button>
+        <button type="button" data-bill="monthly" aria-pressed="false">Monthly</button>
+      </div>
+    </div>
+
+    <div class="seats">
+      <label for="seats">Team size: <output id="seatsOut" for="seats">50 teammates</output></label>
+      <input id="seats" type="range" min="5" max="500" step="5" value="50">
+    </div>
+
+    <div class="plans">
+      <article class="plan" data-plan="starter">
+        <p class="plan-badge"></p>
+        <h3>Starter</h3>
+        <p class="plan-desc">For small teams getting their first posting program off the ground.</p>
+        <div class="price"><b>$15</b><span>per teammate,<br>per month</span></div>
+        <p class="price-note"></p>
+        <a class="btn btn-ghost" href="#join">Start with Starter</a>
+        <ul class="plan-list">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Up to 25 teammates</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Connect LinkedIn, X, Instagram, and TikTok</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Leaderboards and challenges</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Trending content ideas</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Trackable links for every teammate</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Monthly performance reports</li>
+        </ul>
+      </article>
+
+      <article class="plan pop" data-plan="growth">
+        <p class="plan-badge">Most popular</p>
+        <h3>Growth</h3>
+        <p class="plan-desc">For companies ready to run employee content like a real channel.</p>
+        <div class="price"><b>$29</b><span>per teammate,<br>per month</span></div>
+        <p class="price-note"></p>
+        <a class="btn" href="#join">Start with Growth</a>
+        <ul class="plan-list">
+          <li class="inc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Everything in Starter, plus:</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Up to 250 teammates</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>AI interviews by voice or chat</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Autopilot drafting and scheduling with approvals</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Mirror what works</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Private reward programs with payout approvals and payroll export</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>CRM sync with HubSpot and Salesforce</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Weekly automated reports</li>
+        </ul>
+      </article>
+
+      <article class="plan" data-plan="enterprise">
+        <p class="plan-badge"></p>
+        <h3>Enterprise</h3>
+        <p class="plan-desc">For large and regulated organizations that need control at scale.</p>
+        <div class="price"><b class="custom">Custom</b></div>
+        <p class="price-note">Volume pricing for teams of 250 or more.</p>
+        <a class="btn btn-ghost" href="#join">Talk to sales</a>
+        <ul class="plan-list">
+          <li class="inc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Everything in Growth, plus:</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Unlimited teammates and workspaces</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>SSO and automated user provisioning</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Compliance review workflows and admin guardrails</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Direct payroll sync for reward payouts</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Data export to your warehouse</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Dedicated success manager</li>
+        </ul>
+      </article>
+    </div>
+
+    <p class="price-fine">Prices in USD, 5 teammate minimum. Rewards are funded by your company and paid through your own payroll. Crewcast never holds funds or takes a cut.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="h-lg">Questions? Answers.</h2></div>
+    <div class="faq">
+      <details><summary>Do employees have to post?<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></summary><p>No. Crewcast is opt in. Most teams get strong participation from interviews, easy drafts, and rewards rather than mandates.</p></details>
+      <details><summary>Will posts sound like AI?<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></summary><p>Drafts start from each person's own interview answers and past writing, so the stories and opinions are theirs. They can edit anything before it goes live.</p></details>
+      <details><summary>How do rewards and bonuses work?<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></summary><p>Your company decides whether to offer a reward, what it is, and how much. Pick the metric, like most impressions or most leads, and the time frame. When a challenge ends, an admin approves the winner and cash rewards are paid through your payroll, so they are handled like any other bonus.</p></details>
+      <details><summary>Can people outside the company see our rewards?<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></summary><p>No. Challenges, leaderboards, and reward amounts are visible only to your team. Posts do mention that the author works at your company, which is expected whenever employees promote their employer.</p></details>
+      <details><summary>Who counts as a paid teammate?<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></summary><p>Only people who opt in and connect at least one account. Admins and people who just view reports are free.</p></details>
+      <details><summary>How is revenue attributed?<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></summary><p>Each teammate shares personal trackable links. Clicks flow back to the post and person that drove them, and Crewcast syncs with HubSpot or Salesforce to credit leads and closed deals.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="sec-ink cta" id="join">
+  <div class="wrap">
+    <h2 class="h-xl">Your team is ready.<br><span class="grad">Are you?</span></h2>
+    <p class="lede" style="max-width:600px;margin:24px auto 0">Join the early access list and be first to turn your people into your strongest marketing channel.</p>
+    <div class="waitlist">
+      <label class="sr" for="email">Work email</label>
+      <input id="email" type="email" placeholder="Work email" autocomplete="email">
+      <button class="btn" id="joinBtn" type="button">Get early access</button>
+    </div>
+    <p class="wl-msg" id="wlMsg" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="fine">
+      <p>Product names, people, and figures shown on this page are illustrative sample data.</p>
+      <p>Reward programs are optional, set by each company, visible only inside that company, and paid through the company's own payroll provider. Crewcast does not hold or transfer funds. Posts disclose that the author works at the company. Direct payroll sync availability varies by provider. Crewcast works within each social network's terms for connected accounts.</p>
+    </div>
+    <div class="foot-cols">
+      <div><h4>Product</h4><a href="#features">Features</a><a href="#interview">Interviews</a><a href="#autopilot">Autopilot</a><a href="#results">Reporting</a><a href="#pricing">Pricing</a></div>
+      <div><h4>Programs</h4><a href="#features">Leaderboards</a><a href="#rewards">Rewards</a><a href="#features">Trackable links</a></div>
+      <div><h4>Company</h4><a href="#top">About</a><a href="#top">Careers</a><a href="#join">Contact</a></div>
+      <div><h4>Resources</h4><a href="#faq">FAQ</a><a href="#top">Privacy</a><a href="#top">Terms</a></div>
+    </div>
+    <div class="foot-base"><span>Copyright © 2026 Crewcast. All rights reserved.</span><span>Made in New York</span></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Voice waveform bars
+  var wave = document.getElementById('wave');
+  if (wave) {
+    var h = [8,14,20,12,22,16,9,18,24,14,10,19,13,21,8,15,11,17,23,12,9,16];
+    h.forEach(function(v){ var i = document.createElement('i'); i.style.height = v + 'px'; wave.appendChild(i); });
+  }
+
+  // Leaderboard: Priya overtakes Marcus once the dashboard is on screen
+  var lb = document.getElementById('lb'), toast = document.getElementById('toast'), device = document.getElementById('device');
+  var played = false;
+  function countTo(el, from, to, dur, fmt){
+    if (reduce) { el.textContent = fmt(to); return; }
+    var t0 = null;
+    function step(t){ if(!t0) t0 = t; var p = Math.min((t - t0) / dur, 1); var e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  function overtake(){
+    if (played || !lb) return; played = true;
+    var priya = lb.querySelector('[data-id="priya"]');
+    countTo(priya.querySelector('[data-k="leads"]'), 38, 44, 900, function(v){ return Math.round(v); });
+    countTo(priya.querySelector('[data-k="reach"]'), 86.2, 97.4, 900, function(v){ return v.toFixed(1) + 'K'; });
+    countTo(priya.querySelector('[data-k="posts"]'), 14, 15, 900, function(v){ return Math.round(v); });
+    setTimeout(function(){
+      var rows = Array.prototype.slice.call(lb.children);
+      var first = new Map(rows.map(function(r){ return [r, r.getBoundingClientRect().top]; }));
+      lb.insertBefore(priya, lb.firstElementChild);
+      Array.prototype.slice.call(lb.children).forEach(function(r, i){
+        r.querySelector('.lb-rank').textContent = i + 1;
+        var dy = first.get(r) - r.getBoundingClientRect().top;
+        if (dy && !reduce && r.animate) {
+          r.style.zIndex = r === priya ? 2 : 1;
+          r.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 750, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        }
+      });
+      priya.classList.add('is-up');
+      toast.classList.add('show');
+      setTimeout(function(){ toast.classList.remove('show'); }, 2800);
+    }, reduce ? 0 : 950);
+  }
+  if ('IntersectionObserver' in window && device) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if (en.isIntersecting) { setTimeout(overtake, reduce ? 0 : 2000); io.disconnect(); } });
+    }, { threshold: 0.45 });
+    io.observe(device);
+  } else { setTimeout(overtake, 2000); }
+
+  // Approval queue
+  var qcount = document.getElementById('qcount');
+  var buttons = document.querySelectorAll('.approve');
+  function updateCount(){
+    var n = document.querySelectorAll('.approve[aria-pressed="true"]').length;
+    qcount.textContent = n === buttons.length ? 'All posts approved' : n + ' of ' + buttons.length + ' approved';
+  }
+  Array.prototype.forEach.call(buttons, function(b){
+    b.addEventListener('click', function(){
+      var on = b.getAttribute('aria-pressed') !== 'true';
+      b.setAttribute('aria-pressed', on);
+      b.querySelector('span').textContent = on ? 'Approved' : 'Approve';
+      updateCount();
+    });
+  });
+
+  // Rewards payout demo
+  var poBtn = document.getElementById('poBtn'), poNote = document.getElementById('poNote');
+  if (poBtn) {
+    var poSteps = document.querySelectorAll('#poSteps li'), poStage = 0;
+    var poFlow = [
+      { note: 'Approved by Dana Ortiz.', next: 'Send to payroll' },
+      { note: 'Bonus draft created in your payroll for review.', next: 'Mark as paid' },
+      { note: 'Paid with the next payroll run.', next: 'Paid' }
+    ];
+    poBtn.addEventListener('click', function(){
+      if (poStage >= poFlow.length) return;
+      var step = poFlow[poStage];
+      poSteps[poStage + 1].classList.add('done');
+      poNote.textContent = step.note;
+      poBtn.textContent = step.next;
+      poStage++;
+      if (poStage === poFlow.length) poBtn.disabled = true;
+    });
+  }
+
+  // Pricing: billing toggle and team size estimate
+  var prices = { starter: { annual: 15, monthly: 19, cap: 25 }, growth: { annual: 29, monthly: 36, cap: 250 } };
+  var bill = 'annual';
+  var seats = document.getElementById('seats'), seatsOut = document.getElementById('seatsOut');
+  var billBtns = document.querySelectorAll('[data-bill]');
+  function money(n){ return '$' + n.toLocaleString('en-US'); }
+  function renderPricing(){
+    var n = parseInt(seats.value, 10);
+    seatsOut.textContent = n + ' teammates';
+    Object.keys(prices).forEach(function(k){
+      var card = document.querySelector('[data-plan="' + k + '"]');
+      var p = prices[k][bill];
+      card.querySelector('.price b').textContent = money(p);
+      var note = card.querySelector('.price-note');
+      if (n > prices[k].cap) {
+        note.textContent = k === 'starter' ? 'Starter covers up to 25 teammates. Growth fits your team.' : 'Over 250 teammates? Enterprise fits your team.';
+      } else {
+        note.textContent = 'About ' + money(p * n) + ' a month for ' + n + ' teammates, billed ' + (bill === 'annual' ? 'annually' : 'monthly') + '.';
+      }
+    });
+  }
+  Array.prototype.forEach.call(billBtns, function(b){
+    b.addEventListener('click', function(){
+      bill = b.getAttribute('data-bill');
+      Array.prototype.forEach.call(billBtns, function(x){ x.setAttribute('aria-pressed', x === b); });
+      renderPricing();
+    });
+  });
+  if (seats) { seats.addEventListener('input', renderPricing); renderPricing(); }
+
+  // Early access list
+  var input = document.getElementById('email'), btn = document.getElementById('joinBtn'), msg = document.getElementById('wlMsg');
+  function join(){
+    var v = (input.value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+      msg.className = 'wl-msg err';
+      msg.textContent = 'Enter a work email, like name@company.com.';
+      input.focus();
+      return;
+    }
+    msg.className = 'wl-msg ok';
+    msg.textContent = 'You are on the list. We will email ' + v + ' when your spot opens.';
+    input.value = '';
+  }
+  btn.addEventListener('click', join);
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') join(); });
+})();
+</script>
+</body>
+</html>
