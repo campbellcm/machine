@@ -1,3 +1,4 @@
+import { RewardRow } from "@/components/v1/reward-row";
 import { workspace } from "@/lib/supabase/server";
 import { createReward, fulfillReward } from "./actions";
 export default async function Rewards({
@@ -13,10 +14,13 @@ export default async function Rewards({
     .select("*")
     .eq("organization_id", org.id)
     .order("starts_at", { ascending: false });
+  const [{ data: team }, { data: photos }] = await Promise.all([
+    db.rpc("team_connections", { org: org.id }), db.rpc("team_photos", { org: org.id }),
+  ]);
   return (
     <div className="v1">
       <p className="eyebrow">Good work deserves recognition</p>
-      <h1>Great work. Worth celebrating.</h1>
+      <h1>Your next big win.</h1>
       <p>See what’s up for grabs and who’s leading the way.</p>
       {notice && (
         <p role="status">
@@ -44,7 +48,7 @@ export default async function Rewards({
                 name="prize"
                 required
                 maxLength={500}
-                placeholder="$1,000, a Mac mini, a trip…"
+                placeholder="$1,000, a MacBook Pro, a trip…"
               />
             </label>
             <label>
@@ -89,7 +93,7 @@ export default async function Rewards({
           </form>
         </details>
       )}
-      <div className="v1-grid" style={{ marginTop: 24 }}>
+      <div className="rewards-list">
         {await Promise.all(
           (rewards || []).map(async (r) => {
             const { data: scores, error: scoreError } =
@@ -101,44 +105,14 @@ export default async function Rewards({
                     .order("rank")
                 : await db.rpc("challenge_scores", { challenge: r.id });
             return (
-              <article className="v1-card" key={r.id}>
-                <span className="v1-badge">{r.status}</span>
-                <h2>{r.name}</h2>
-                <p className="v1-prize">{r.prize || "Recognition"}</p>
-                <small>
-                  {new Date(r.starts_at).toLocaleString("en-US", {
-                    timeZone: org.timezone,
-                  })}{" "}
-                  —{" "}
-                  {new Date(r.ends_at).toLocaleString("en-US", {
-                    timeZone: org.timezone,
-                  })}{" "}
-                  ({org.timezone})
-                </small>
-                <p>{r.rules}</p>
-                <h3>
-                  {r.status === "ended"
-                    ? "Final standings"
-                    : "Current standings"}
-                </h3>
-                {scoreError ? (
-                  <p>Standings unavailable. Try again later.</p>
-                ) : (
-                  <ol>
-                    {(
-                      (scores as {
-                        user_id: string;
-                        display_name?: string;
-                        score: number;
-                      }[]) || []
-                    ).map((s) => (
-                      <li key={s.user_id}>
-                        {s.display_name || "Member " + s.user_id.slice(0, 6)}:{" "}
-                        {s.score}
-                      </li>
-                    ))}
-                  </ol>
-                )}
+              <RewardRow key={r.id} title={r.name} prize={r.prize || "Recognition"} status={r.status}
+                metric={r.metric === "unique_clicks" ? "unique clicks" : r.metric === "published_posts" ? "verified posts" : "leads"}
+                dates={`${new Date(r.starts_at).toLocaleDateString("en-US", { timeZone: org.timezone })} — ${new Date(r.ends_at).toLocaleDateString("en-US", { timeZone: org.timezone })} (${org.timezone})`}
+                rules={`${r.rules} Eligibility window: ${new Date(r.starts_at).toLocaleString("en-US", { timeZone: org.timezone })} through ${new Date(r.ends_at).toLocaleString("en-US", { timeZone: org.timezone })} (${org.timezone}).`} error={!!scoreError}
+                leaders={((scores || []) as { user_id: string; display_name?: string; score: number; rank?: number }[]).map(s => ({
+                  id: s.user_id, name: s.display_name || team?.find((p: { user_id: string }) => p.user_id === s.user_id)?.display_name || "Former teammate",
+                  photo: photos?.find((p: { user_id: string }) => p.user_id === s.user_id)?.photo_url, score: Number(s.score), rank: s.rank,
+                }))}>
                 {r.fulfilled_at ? (
                   <p>Prize fulfilled</p>
                 ) : (
@@ -156,7 +130,7 @@ export default async function Rewards({
                     </form>
                   )
                 )}
-              </article>
+              </RewardRow>
             );
           }),
         )}
