@@ -4,6 +4,8 @@ export const personStats = z.object({
   id: z.string(),
   name: z.string(),
   role: z.string(),
+  photo_url: z.string().optional(),
+  channels: z.array(z.enum(["linkedin", "x"])).optional(),
   posts: z.number(),
   clicks: z.number(),
   leads: z.number(),
@@ -50,6 +52,8 @@ export function demoReport(start: string, end: string): Report {
     id: p.id,
     name: p.name,
     role: p.title,
+    photo_url: `https://i.pravatar.cc/88?img=${[12,47,13,44,11,49,14,48,15,45,16,46][index]}`,
+    channels: [...(index < 8 ? ["linkedin" as const] : []), ...(index % 3 === 0 ? ["x" as const] : [])],
     posts: posts.filter((d) => d.userId === p.id).length,
     clicks: demoData.clicks.filter(
       (c) => c.userId === p.id && !c.isBot && !c.isDuplicate && inside(c.date),

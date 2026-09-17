@@ -2773,3 +2773,20 @@ h1 {
   .team-row { grid-template-columns:1fr 1fr; padding:16px; gap:12px; }
   .team-person { grid-column:1 / -1; }
 }
+
+.leader-person, .feed-author { display:flex; align-items:center; gap:12px; }
+.leader-person { min-width:210px; }
+.account-icons { display:flex; gap:6px; margin-top:6px; }
+.account-icon { display:inline-flex; width:22px; height:22px; padding:4px; align-items:center; justify-content:center; border-radius:5px; flex-shrink:0; background:var(--line); }
+.account-icon.linkedin { background:#0a66c2; color:#fff; }
+.account-icon svg { width:100%; height:100%; }
+.feed-filters { display:flex; flex-wrap:wrap; gap:12px; }
+.feed-filters label { min-width:130px; }
+.feed-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; align-items:start; }
+.feed-grid .v1-post { min-width:0; }
+.feed-author { min-width:0; }
+.feed-author strong { overflow-wrap:anywhere; }
+.feed-body { font-size:14px; line-height:1.7; overflow-wrap:anywhere; }
+.feed-expand { background:none; border:0; padding:0; color:var(--text); font:inherit; font-size:13px; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+.feed-more { text-align:center; margin:24px 0; }
+@media(max-width:900px) { .feed-grid { grid-template-columns:1fr; } }
