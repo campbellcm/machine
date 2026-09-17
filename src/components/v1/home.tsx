@@ -115,7 +115,7 @@ export function HomeDashboard({
             </select>
           </label>
         </div>
-        <div className="v1-table-wrap">
+        <div className="v1-table-wrap" tabIndex={0} role="region" aria-label="Team leaderboard">
           <table className="v1-table">
             <thead>
               <tr>
