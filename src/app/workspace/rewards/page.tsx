@@ -108,7 +108,7 @@ export default async function Rewards({
               <RewardRow key={r.id} title={r.name} prize={r.prize || "Recognition"} status={r.status}
                 metric={r.metric === "unique_clicks" ? "unique clicks" : r.metric === "published_posts" ? "verified posts" : "leads"}
                 dates={`${new Date(r.starts_at).toLocaleDateString("en-US", { timeZone: org.timezone })} — ${new Date(r.ends_at).toLocaleDateString("en-US", { timeZone: org.timezone })} (${org.timezone})`}
-                rules={r.rules} error={!!scoreError}
+                rules={`${r.rules} Eligibility window: ${new Date(r.starts_at).toLocaleString("en-US", { timeZone: org.timezone })} through ${new Date(r.ends_at).toLocaleString("en-US", { timeZone: org.timezone })} (${org.timezone}).`} error={!!scoreError}
                 leaders={((scores || []) as { user_id: string; display_name?: string; score: number; rank?: number }[]).map(s => ({
                   id: s.user_id, name: s.display_name || team?.find((p: { user_id: string }) => p.user_id === s.user_id)?.display_name || "Former teammate",
                   photo: photos?.find((p: { user_id: string }) => p.user_id === s.user_id)?.photo_url, score: Number(s.score), rank: s.rank,
