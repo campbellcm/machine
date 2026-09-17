@@ -1,56 +1,26 @@
 export const implementationStatus = [
   {
-    area: "Accounts and organizations",
-    status: "Implemented · live verification needed",
+    area: "Home & Team",
+    status: "Implemented · database setup required",
     detail:
-      "Email and Google sign-in, company creation, roles, invitations, consent, and private storage. Requires Supabase and production email setup.",
+      "Date-filtered posts, unique clicks and leads, team ranking, published feed, and safe LinkedIn/X connection status. Views and sales remain unavailable until analytics and CRM integration are implemented.",
   },
   {
-    area: "Drafts and author approvals",
-    status: "Implemented · AI account needed",
+    area: "Daily AI drafts",
+    status: "Implemented · API credentials required",
     detail:
-      "Saved interviews, three generated drafts, editing, locked disclosure, blocked phrases, admin review, and final author approval. Streaming follow-ups and quick edits remain.",
+      "OpenAI or Claude, role and approved context, three private options daily, timezone schedule, run now, pause, bounded retries and author approval. Native Fathom, Slack and CRM ingestion is not implemented.",
   },
   {
-    area: "LinkedIn publishing",
-    status: "Implemented · developer app needed",
+    area: "LinkedIn & X",
+    status: "Implemented · real-account verification needed",
     detail:
-      "Personal profile connection, encrypted tokens, manual and direct posting, and scheduling. Real profile testing and analytics approval remain.",
+      "OAuth, encrypted tokens, manual/API text posting and author approvals. LinkedIn scheduling supported. X currently requires reconnecting after its short-lived authorization expires; automatic refresh and scheduled X posts are not enabled.",
   },
   {
-    area: "Attribution",
-    status: "Implemented · pilot verification needed",
+    area: "Rewards",
+    status: "Implemented for posts, clicks and leads",
     detail:
-      "Campaign links, privacy-preserving click counts, form attribution capture, idempotent conversion API, and live totals. Full CRM attribution remains.",
-  },
-  {
-    area: "Ideas and challenges",
-    status: "Partially implemented",
-    detail:
-      "40 role-based ideas and private no-reward challenges with settled results. AI ideas, weekly reports, and reward programs remain.",
-  },
-  {
-    area: "Call recording integrations",
-    status: "Not connected",
-    detail:
-      "All eight requested providers are cataloged. Native connections, permission checks, production anonymization, and source-grounded generation still need implementation and provider testing.",
-  },
-  {
-    area: "HubSpot and Salesforce",
-    status: "Not implemented",
-    detail:
-      "Needs provider apps, test accounts, OAuth, sync jobs, stage mappings, and attribution/reversal testing.",
-  },
-  {
-    area: "Billing and production monitoring",
-    status: "Not implemented",
-    detail:
-      "Stripe subscriptions, plan enforcement, Sentry, deletion workflows, and production security review remain.",
-  },
-  {
-    area: "Cash rewards and payroll",
-    status: "Not enabled",
-    detail:
-      "Two-person approvals, immutable payout records, CSV handoff, and Gusto draft sync remain. External security review and Gusto partner access are required before live payroll use.",
+      "Admins define any prize description and fixed rules; members see standings, final results and fulfillment status. All opted-in members participate. Impression/sales competitions and draft reward editing are not yet implemented. Company fulfills prizes outside the app.",
   },
 ];

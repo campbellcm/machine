@@ -124,7 +124,10 @@ export async function changeMember(f: FormData) {
 export async function saveDraft(f: FormData) {
   const { db, org } = await workspace();
   const id = str(f, "id");
-  const { error } = await db.rpc("save_draft", {
+  const { error } = await db.rpc("save_channel_draft", {
+    target_channel: z
+      .enum(["linkedin", "x"])
+      .parse(f.get("channel") || "linkedin"),
     org: org.id,
     draft: id ? z.uuid().parse(id) : null,
     content: z.string().trim().min(1).max(3000).parse(f.get("body")),
@@ -152,11 +155,14 @@ export async function recordManual(f: FormData) {
     u.hash = "";
     url = u.toString();
   }
-  const { error } = await db.rpc("record_manual_post", {
-    draft: uuid(f, "id"),
-    expected_revision: Number(f.get("revision")),
-    post_url: url,
-  });
+  const { error } = await db.rpc(
+    f.get("channel") === "x" ? "record_x_post" : "record_manual_post",
+    {
+      draft: uuid(f, "id"),
+      expected_revision: Number(f.get("revision")),
+      post_url: url,
+    },
+  );
   finish(error, "/workspace/drafts");
 }
 export async function approvedCopy(id: string, revision: number) {

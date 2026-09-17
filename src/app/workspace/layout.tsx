@@ -10,7 +10,6 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const { org, member, members } = await workspace();
-  const admin = ["owner", "admin"].includes(member.role);
   return (
     <div className="live-page">
       <header className="live-top">
@@ -45,26 +44,10 @@ export default async function Layout({
         </div>
       </header>
       <nav className="live-nav" aria-label="Workspace navigation">
-        <Link href="/workspace">Overview</Link>
-        <Link href="/workspace/challenges">Challenges</Link>
-        <Link href="/workspace/roadmap">Build status</Link>
-        {["owner", "admin", "teammate"].includes(member.role) && (
-          <>
-            <Link href="/workspace/drafts">My drafts</Link>
-            <Link href="/workspace/interview">Interview</Link>
-            <Link href="/workspace/ideas">Ideas</Link>
-            <Link href="/workspace/connections">Connections</Link>
-            <Link href="/workspace/profile">My profile</Link>
-          </>
-        )}
-        {admin && (
-          <>
-            <Link href="/workspace/team">Team</Link>
-            <Link href="/workspace/settings">Company settings</Link>
-            <Link href="/workspace/campaigns">Tracking</Link>
-            <Link href="/workspace/audit">Activity</Link>
-          </>
-        )}
+        <Link href="/workspace">Home</Link>
+        <Link href="/workspace/team">Team</Link>
+        <Link href="/workspace/rewards">Rewards</Link>
+        <Link href="/workspace/ai">AI</Link>
       </nav>
       <main>{children}</main>
     </div>

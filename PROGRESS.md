@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M1 live-workspace implementation, with connected M2–M5 pilot flows.
+Current milestone: Simplified V1 — Home, Team, Rewards, AI, and daily provider-backed drafting.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -168,6 +168,7 @@ Work is on `m1-live-workspace`. This branch includes the connected pilot path ra
 - No service secrets exist in the repository. `.env.example` describes setup; `.env.local` is ignored.
 
 
+
 ## GitHub repository upload — September 17, 2026
 
 - User explicitly requested publishing the built app to their `machine` repository through the established GitHub connector.
@@ -176,3 +177,50 @@ Work is on `m1-live-workspace`. This branch includes the connected pilot path ra
 - GitHub Actions run: https://github.com/campbellcm/machine/actions/runs/35172396749 (running when this note was written; no success claimed).
 - Local `origin` now points to https://github.com/campbellcm/machine.git. Connector-created commits use a separate history from the local build commits; fetch and reconcile intentionally before a future command-line push. Do not force-push over GitHub history.
 - This publishes source code, not a hosted website. Supabase, LinkedIn, AI, email, and hosting credentials remain unconfigured. Earlier notes about the absence of a remote describe the earlier build session.
+
+## Simplified V1 scope — September 17, 2026
+
+- Founder replaced the previous broad roadmap with four primary tabs: Home, Team, Rewards, AI; LinkedIn and X are the only publishing channels.
+- Replaced PRD with revision 4 and preserved revision 3 in docs/archive/PRD-v3.md. This is a requirements change, not a completed interface or integration implementation.
+- Home requires date-filtered company metrics, team rankings, and a date/channel-filtered published-content grid. Team requires safe connection status for both channels.
+- Rewards now include arbitrary admin-described prizes with per-reward standings. Proposed simplification: track fulfillment outside the app, with no payroll or payment processing. Existing no-reward challenge code does not yet satisfy this requirement.
+- AI sources include Claude, ChatGPT, Fathom, Slack, and one CRM. Founder questions pending: first CRM and whether Claude/ChatGPT means conversation imports, drafting-provider choice, or both. Author approval and confidentiality protections remain.
+- Removed billing, payroll, eight-recorder rollout, and extra primary tabs from V1 acceptance. Provider access, analytics coverage, tenant isolation, and real-account acceptance remain required.
+- Netlify deployment from machine/main succeeded earlier at https://crewcast-machine.netlify.app; the existing UI remains live. This scope revision has not been uploaded or deployed.
+- No application code or database changes in this scope revision. No new integrations or credentials were configured; no tests were needed for documentation-only changes.
+
+## Daily drafting clarification — September 17, 2026
+
+- Founder clarified Claude/ChatGPT intent: connect a personal account, press a button, and start a daily recurring task generating multiple role-specific post options to promote the business. Conversation-history ingestion is not requested.
+- Updated PRD accordingly; three options is a proposed default, not a founder-specified count. Author approval before publication remains.
+- Official documentation checked: OpenAI API authentication uses API keys; ChatGPT documents native scheduled tasks and shared-task setup, but no external task-creation API was verified. Claude account guidance directs third-party integrations toward API authentication. Personal-account integration feasibility remains open; no provider connection, recurring task, or paid service was created.
+- This is a specification clarification only; deployed application unchanged.
+
+## Simplified V1 implementation — September 17, 2026
+
+Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs and instructed continued implementation. Work is on m2-simplified-v1. No paid provider account, API call, social publication, or hosted database was provisioned during development.
+
+### Implemented
+
+- Exactly four primary navigation destinations in sample and live workspaces: Home, Team, Rewards, AI. Contextual account/admin tools remain inside these flows; legacy routes are retained for compatibility.
+- Home: custom inclusive date range, company posts/clicks/leads, sortable team rankings with tied ranks, and date/channel-filtered published feed. Live views/sales explicitly unavailable. Fictional preview includes clearly marked illustrative views/sales.
+- Team: safe connection projection with tenant membership checks, LinkedIn/X state, personal connect/disconnect, profile settings and admin invitations. Token table remains service-only.
+- Rewards: arbitrary admin-described prize, fixed scoring/date/rules, standings for clicks/leads/verified posts, 72-hour settlement, deterministic ties, and fulfillment acknowledgment. No transfer of funds. Impressions/sales and draft reward editing remain unimplemented.
+- AI: company API credentials, OpenAI Responses structured JSON and Anthropic tool output, role/company/approved-note context, three options, channel limits, disclosure/blocked-phrase checks, provider readiness, pause/run-now controls and run history.
+- Private schedules/runs with RLS, author-only writes via RPC, daily uniqueness, leases, three-attempt bound, stale-worker rejection, pause/settings invalidation, atomic batch insertion, membership/consent cleanup. No auto-publication.
+- X OAuth PKCE, encrypted short-lived tokens, profile verification, direct/manual X text publication with author approval. No token refresh or scheduled X posting; explicit reconnect messaging. LinkedIn scheduling retained.
+- Netlify scheduled functions for daily generation and existing maintenance. Protected internal routes; free plan unchanged. Configuration/templates and launch instructions updated.
+
+### Verification and review
+
+- 69 unit/database/transport tests pass. New tests cover private schedule access, cross-tenant denial, replay/duplicate generation, interrupted-run recovery, stale leases, bounded retries, prize permissions, channel boundaries, report reconciliation, and output validation.
+- Type checking and lint pass. Optimized production build passed using Next webpack. Turbopack initially hit a sandbox local-port restriction, not a compilation failure.
+- Independent read-only agent review required by AGENTS.md found an abandoned-lease recovery issue and a third-attempt edge case; both fixed. No additional security blockers reported for the reviewed scope.
+- In-app browser verified the four-tab Home and daily routine preview. Standalone Playwright attempted with installed Chromium but host MachPort permission denial prevented browser launch; no local Playwright/axe pass claimed. Browser checks are also in GitHub CI.
+
+### Remaining acceptance limits
+
+- No Supabase/AI/social provider credentials supplied: no real sign-in, OAuth exchange, model request, scheduled batch or social post was run against external services.
+- Fathom, Slack and CRM native ingestion, actual impression/sales analytics and impression/sales prize scoring remain engineering work. No CRM selected by founder yet.
+- Scheduler is bounded for a pilot: two daily generations per 15-minute slot, one scheduled LinkedIn post per maintenance slot. Busy queues delay delivery. X authorization expires without refresh; scheduled X posting unavailable.
+- Local and remote Git histories differ from the original connector import. Publish this branch using the connector and merge via reviewed PR; never force-push.

@@ -19,7 +19,7 @@ export async function runScheduledPosts() {
     .eq("status", "pending")
     .lte("run_at", new Date().toISOString())
     .order("run_at")
-    .limit(10);
+    .limit(1);
   for (const job of jobs || []) {
     const { data: raw } = await db.rpc("claim_scheduled_post", { job: job.id });
     if (!raw) continue;
