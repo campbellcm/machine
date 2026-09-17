@@ -11,8 +11,13 @@ test("four tabs, date filters, leaderboard and channel feed", async ({
     page.getByRole("navigation", { name: "Main navigation" }).getByRole("link"),
   ).toHaveText(["Home", "Team", "Rewards", "AI"]);
   await expect(page.locator(".v1-post")).toHaveCount(6);
-  await page.getByRole("button", { name: /See more of/ }).first().click();
-  await expect(page.getByRole("button", { name: /See less of/ }).first()).toHaveAttribute("aria-expanded", "true");
+  await page
+    .getByRole("button", { name: /See more of/ })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("button", { name: /See less of/ }).first(),
+  ).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "Show more posts" }).click();
   await expect(page.locator(".v1-post")).toHaveCount(12);
   await page.getByLabel("Feed channel").selectOption("x");
@@ -37,23 +42,39 @@ test("four tabs, date filters, leaderboard and channel feed", async ({
 test("team search and sample daily routine", async ({ page }) => {
   await page.goto("/demo/team");
   await page.getByLabel("Find a teammate").fill("Sarah");
-  await expect(page.getByRole("list", { name: "Team members" }).getByRole("listitem")).toHaveCount(1);
+  await expect(
+    page.getByRole("list", { name: "Team members" }).getByRole("listitem"),
+  ).toHaveCount(1);
   await page.getByRole("link", { name: "AI", exact: true }).click();
-  await page.getByRole("button", { name: "Try sample routine" }).click();
-  await expect(page.getByText("Sample routine on")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Today’s post" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Approve post", exact: true }).click();
   await page
-    .getByRole("button", { name: "Preview three draft options" })
+    .getByRole("button", { name: "Confirm approval", exact: true })
     .click();
-  await expect(page.getByRole("textbox", { name: /Sample draft/ })).toHaveCount(
-    3,
-  );
-  await page.getByRole("button", { name: "Pause sample routine" }).click();
-  await expect(page.getByText("Sample routine on")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Copy approved post", exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Preview as").selectOption("engineering");
+  await expect(page.getByText(/technical/).first()).toBeVisible();
+  await page.getByRole("button", { name: "My Profile", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Pause preparation", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Today", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your content is paused." }),
+  ).toBeVisible();
 });
 test("sample reward creation", async ({ page }) => {
   await page.goto("/demo/rewards");
-  await expect(page.getByRole("heading", { name: "$1,000", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "MacBook Pro", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "$1,000", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "MacBook Pro", exact: true }),
+  ).toBeVisible();
   const reward = page.locator(".reward-row").first();
   await expect(reward.getByRole("listitem")).toHaveCount(3);
   await reward.getByText("See all 12 participants").click();
@@ -87,4 +108,44 @@ test("four tabs are accessible in dark mode", async ({ page }) => {
       route,
     ).toBe(true);
   }
+});
+
+test("AI company review returns final approval to the employee", async ({
+  page,
+}) => {
+  await page.goto("/demo/ai");
+  await page
+    .getByRole("button", { name: "AI administration", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Content Strategy", exact: true })
+    .click();
+  await page
+    .getByLabel("Require company review before an employee’s final approval")
+    .check();
+  await page
+    .getByRole("button", { name: "Save controls", exact: true })
+    .click();
+  await page.getByRole("button", { name: "My content", exact: true }).click();
+  await page.getByRole("button", { name: "Approve post", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confirm approval", exact: true })
+    .click();
+  await expect(
+    page.getByText("With your reviewer", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "AI administration", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Return for final approval", exact: true })
+    .click();
+  await page.getByRole("button", { name: "My content", exact: true }).click();
+  await page.getByRole("button", { name: "Approve post", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confirm approval", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Copy approved post", exact: true }),
+  ).toBeVisible();
 });

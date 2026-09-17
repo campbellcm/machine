@@ -1,0 +1,460 @@
+.root {
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #25312c;
+}
+.root h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -1.4px;
+  margin: 4px 0 12px;
+}
+.root h2 {
+  font-size: 23px;
+  letter-spacing: -0.5px;
+  margin: 0 0 12px;
+}
+.root h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+.root p {
+  line-height: 1.65;
+  color: #637069;
+  margin: 8px 0 16px;
+}
+.heading,
+.todayHeading,
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.eyebrow {
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #577a58 !important;
+  font-weight: 700;
+}
+.root button {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid #d7ded6;
+  background: #fff;
+  color: #344d39;
+  border-radius: 9px;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.root button:hover {
+  background: #eff5ed;
+}
+.root button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.root button.primary {
+  background: #2f5939;
+  color: white;
+  border-color: #2f5939;
+}
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  border-bottom: 1px solid #dce2d9;
+  margin: 24px 0 30px;
+  padding-bottom: 12px;
+}
+.tabs button {
+  white-space: nowrap;
+  background: transparent;
+  border-color: transparent;
+}
+.tabs button[aria-current] {
+  background: #e7efdf;
+  color: #2d5238;
+}
+.sample,
+.notice {
+  background: #f1f4eb;
+  border: 1px solid #e0e6d7;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 13px;
+}
+.sample {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.sample label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+.panel,
+.post,
+.onboarding {
+  background: #fff;
+  border: 1px solid #e0e5dc;
+  border-radius: 16px;
+  padding: 28px;
+  margin: 20px 0;
+  box-shadow: 0 8px 25px #253d2904;
+}
+.post {
+  max-width: 780px;
+  border-top: 3px solid #7a9863;
+}
+.postText {
+  white-space: pre-wrap;
+  color: #293930 !important;
+  font-size: 16px;
+  line-height: 1.8 !important;
+  overflow-wrap: anywhere;
+}
+.root label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 16px 0;
+  color: #425245;
+}
+.root input,
+.root textarea,
+.root select {
+  font: inherit;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #d7ded3;
+  border-radius: 8px;
+  padding: 11px;
+  color: #293a2e;
+  box-sizing: border-box;
+}
+.root textarea {
+  min-height: 95px;
+  resize: vertical;
+}
+.root textarea.editor {
+  min-height: 250px;
+  line-height: 1.8;
+}
+.root label.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.checkbox input {
+  width: auto;
+  flex: none;
+  margin-top: 4px;
+  accent-color: #385d3b;
+}
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.section {
+  margin: 32px 0;
+}
+.idea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid #e6ebe2;
+  font-size: 13px;
+}
+.idea p {
+  margin-bottom: 0;
+}
+.idea .actions {
+  flex-shrink: 0;
+}
+.empty {
+  text-align: center;
+  background: #f4f6f0;
+  border: 1px dashed #cfd9c8;
+  padding: 40px 24px;
+  border-radius: 16px;
+  margin: 20px 0;
+  color: #63735f;
+}
+.empty svg {
+  margin: 0 auto 15px;
+}
+.why {
+  border-top: 1px solid #e4e9df;
+  padding: 16px 0;
+  font-size: 13px;
+}
+.why summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #4f6550;
+}
+.why p {
+  margin-top: 12px;
+}
+.trust {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px !important;
+}
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.onboarding {
+  max-width: 730px;
+}
+.choices {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+}
+.choices legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: #f3f6ee;
+  border-radius: 10px;
+  padding: 16px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 25px 0;
+}
+.stats > div {
+  background: #f1f5eb;
+  border-radius: 12px;
+  padding: 22px;
+  display: grid;
+  gap: 7px;
+}
+.stats strong {
+  font-size: 30px;
+  color: #36583c;
+}
+.stats span {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.badge {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 5px 10px;
+  background: #eaf0e3;
+  font-size: 12px;
+}
+.root a {
+  color: #335d3b;
+}
+.root button:focus-visible,
+.root input:focus-visible,
+.root select:focus-visible,
+.root textarea:focus-visible,
+.root summary:focus-visible {
+  outline: 3px solid #b7ce9f;
+  outline-offset: 3px;
+}
+@media (max-width: 650px) {
+  .heading,
+  .todayHeading,
+  .row,
+  .sample,
+  .idea {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .panel,
+  .post,
+  .onboarding {
+    padding: 20px;
+  }
+  .formGrid,
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .stats {
+    gap: 8px;
+  }
+  .stats > div {
+    padding: 15px;
+  }
+  .sample label {
+    width: 100%;
+  }
+  .idea .actions {
+    margin: 0;
+  }
+  .tabs {
+    margin-top: 20px;
+  }
+}
+.warning,
+.confirm {
+  padding: 20px;
+  border-radius: 12px;
+  background: #faf4e6;
+  border: 1px solid #e4d7b9;
+  margin: 16px 0;
+}
+.postHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+.muted {
+  font-size: 12px !important;
+}
+:global([data-theme="dark"]) .root {
+  color: #e4eadf;
+}
+:global([data-theme="dark"]) .root h1,
+:global([data-theme="dark"]) .root h2,
+:global([data-theme="dark"]) .root h3 {
+  color: #eff3e9;
+}
+:global([data-theme="dark"]) .root p {
+  color: #abbba9;
+}
+:global([data-theme="dark"]) .panel,
+:global([data-theme="dark"]) .post,
+:global([data-theme="dark"]) .onboarding {
+  background: #202b24;
+  border-color: #41503d;
+}
+:global([data-theme="dark"]) .root input,
+:global([data-theme="dark"]) .root textarea,
+:global([data-theme="dark"]) .root select {
+  background: #17221b;
+  color: #e4ecde;
+  border-color: #64795c;
+}
+:global([data-theme="dark"]) .root label,
+:global([data-theme="dark"]) .why summary {
+  color: #cad9c1;
+}
+:global([data-theme="dark"]) .postText {
+  color: #e1eadb !important;
+}
+:global([data-theme="dark"]) .empty,
+:global([data-theme="dark"]) .sample,
+:global([data-theme="dark"]) .notice,
+:global([data-theme="dark"]) .choice,
+:global([data-theme="dark"]) .stats > div {
+  background: #263329;
+  color: #c6d6bd;
+  border-color: #506447;
+}
+:global([data-theme="dark"]) .stats strong {
+  color: #c8e6ae;
+}
+:global([data-theme="dark"]) .warning,
+:global([data-theme="dark"]) .confirm {
+  background: #383320;
+  color: #eee5c3;
+}
+:global([data-theme="dark"]) .eyebrow {
+  color: #b0cc9b !important;
+}
+
+:global([data-theme="dark"]) .tabs button {
+  color: #c6d6bd;
+}
+:global([data-theme="dark"]) .tabs button[aria-current] {
+  color: #29432b;
+}
+
+.badge {
+  color: #344d39;
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .root {
+    color: #e4eadf;
+  }
+  :global(:root:not([data-theme="light"])) .root h1,
+  :global(:root:not([data-theme="light"])) .root h2,
+  :global(:root:not([data-theme="light"])) .root h3 {
+    color: #eff3e9;
+  }
+  :global(:root:not([data-theme="light"])) .root p {
+    color: #abbba9;
+  }
+  :global(:root:not([data-theme="light"])) .panel,
+  :global(:root:not([data-theme="light"])) .post,
+  :global(:root:not([data-theme="light"])) .onboarding {
+    background: #202b24;
+    border-color: #41503d;
+  }
+  :global(:root:not([data-theme="light"])) .root input,
+  :global(:root:not([data-theme="light"])) .root textarea,
+  :global(:root:not([data-theme="light"])) .root select {
+    background: #17221b;
+    color: #e4ecde;
+    border-color: #64795c;
+  }
+  :global(:root:not([data-theme="light"])) .root label,
+  :global(:root:not([data-theme="light"])) .why summary {
+    color: #cad9c1;
+  }
+  :global(:root:not([data-theme="light"])) .postText {
+    color: #e1eadb !important;
+  }
+  :global(:root:not([data-theme="light"])) .empty,
+  :global(:root:not([data-theme="light"])) .sample,
+  :global(:root:not([data-theme="light"])) .notice,
+  :global(:root:not([data-theme="light"])) .choice,
+  :global(:root:not([data-theme="light"])) .stats > div {
+    background: #263329;
+    color: #c6d6bd;
+    border-color: #506447;
+  }
+  :global(:root:not([data-theme="light"])) .stats strong {
+    color: #c8e6ae;
+  }
+  :global(:root:not([data-theme="light"])) .warning,
+  :global(:root:not([data-theme="light"])) .confirm {
+    background: #383320;
+    color: #eee5c3;
+  }
+  :global(:root:not([data-theme="light"])) .eyebrow {
+    color: #b0cc9b !important;
+  }
+
+  :global(:root:not([data-theme="light"])) .tabs button {
+    color: #c6d6bd;
+  }
+  :global(:root:not([data-theme="light"])) .tabs button[aria-current] {
+    color: #29432b;
+  }
+}
