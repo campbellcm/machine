@@ -1,0 +1,452 @@
+.page {
+  --ink: #253529;
+  --muted: #657366;
+  --surface: #fff;
+  --line: #e5e9df;
+  --soft: #f6f8f1;
+  --accent: #315c3a;
+  --accent-soft: #eff5e6;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 10px 12px 36px;
+  color: var(--ink);
+}
+.hero {
+  text-align: center;
+  margin: 12px auto 36px;
+}
+.emblem {
+  width: 70px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  margin: 0 auto 24px;
+  color: var(--accent);
+  background: radial-gradient(circle at 30% 25%, #f5f8db, #e4efce);
+  border: 1px solid #d6e3bf;
+  border-radius: 23px;
+  box-shadow: 0 12px 40px #65804512;
+  transform: rotate(-7deg);
+}
+.emblem svg {
+  transform: rotate(7deg);
+}
+.emblem span {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #a5bb77;
+  right: -12px;
+  top: 5px;
+}
+.hero h1 {
+  font-size: clamp(32px, 4vw, 51px);
+  font-weight: 550;
+  letter-spacing: -2px;
+  line-height: 1.12;
+  margin: 0 0 17px;
+  color: var(--ink);
+}
+.hero p {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.65;
+  margin: 0;
+}
+.setup {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 36px 42px 22px;
+  box-shadow: 0 14px 55px #253d2907;
+  max-width: 660px;
+  margin: auto;
+}
+.quantity {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 13px;
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.quantity select {
+  font: inherit;
+  font-size: 27px;
+  font-weight: 650;
+  border: 1px solid #ccddbd;
+  border-radius: 12px;
+  padding: 9px 12px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  cursor: pointer;
+  width: 84px;
+}
+.quantityNote {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin: 12px 0 28px;
+}
+.delivery {
+  border-top: 1px solid var(--line);
+  padding-top: 25px;
+}
+.label {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0 0 15px;
+}
+.channels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.channels button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  padding: 17px 6px;
+  font: inherit;
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 100px;
+}
+.channels button:hover {
+  background: var(--soft);
+}
+.channels button[aria-pressed="true"] {
+  border-color: #79935d;
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px #79935d;
+}
+.channelIcon {
+  height: 31px;
+  width: 31px;
+  display: grid;
+  place-items: center;
+}
+.email {
+  color: #7284af;
+}
+.slack {
+  color: #75416b;
+}
+.imessage {
+  color: #329151;
+}
+.whatsapp {
+  color: #25865e;
+}
+.selectedCheck {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  color: var(--accent);
+}
+.deliveryNote {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  text-align: center;
+  margin: 14px 0 20px;
+}
+.start {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  padding: 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 550;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  min-height: 50px;
+}
+.start:hover {
+  filter: brightness(1.08);
+}
+.start:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.review {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin: 15px 0 7px;
+}
+.pause {
+  font: inherit;
+  font-size: 11px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin: 12px auto 0;
+  cursor: pointer;
+  padding: 7px;
+}
+.reassurance {
+  text-align: center;
+  margin: 27px auto 0;
+}
+.reassurance > span {
+  font-size: 15px;
+  font-weight: 500;
+}
+.reassurance p {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 10px 0;
+}
+.links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 25px auto 0;
+}
+.links button {
+  font: inherit;
+  font-size: 12px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  color: var(--muted);
+  cursor: pointer;
+  min-height: 40px;
+}
+.links button:hover {
+  color: var(--ink);
+}
+.links button > span {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+}
+.demo {
+  text-align: center;
+  color: var(--muted);
+  font-size: 10px;
+  margin: 15px 0 0;
+}
+.preferences {
+  border-top: 1px solid var(--line);
+  margin: 0 0 20px;
+  font-size: 12px;
+}
+.preferences summary {
+  cursor: pointer;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  color: var(--muted);
+}
+.preferences[open] summary svg {
+  transform: rotate(90deg);
+}
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px 0;
+}
+.fields label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+}
+.fields label:nth-child(-n + 2),
+.fields label:last-child {
+  grid-column: 1/-1;
+}
+.fields input,
+.fields select {
+  font: inherit;
+  padding: 12px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  width: 100%;
+  box-sizing: border-box;
+}
+.consent {
+  display: flex;
+  gap: 9px;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 18px 0;
+  color: var(--muted);
+}
+.consent input {
+  accent-color: var(--accent);
+  margin-top: 4px;
+  flex: none;
+}
+.status {
+  background: var(--soft);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.page button:focus-visible,
+.page select:focus-visible,
+.page input:focus-visible,
+.page summary:focus-visible {
+  outline: 3px solid #8ba46f;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  .page {
+    padding: 0 0 25px;
+  }
+  .hero {
+    margin-top: 12px;
+    margin-bottom: 27px;
+  }
+  .hero h1 {
+    letter-spacing: -1.2px;
+    font-size: 34px;
+    max-width: 340px;
+    margin: 0 auto 15px;
+  }
+  .hero p {
+    font-size: 14px;
+  }
+  .emblem {
+    width: 59px;
+    height: 59px;
+    border-radius: 19px;
+    margin-bottom: 22px;
+  }
+  .setup {
+    padding: 26px 18px 18px;
+    border-radius: 20px;
+  }
+  .quantity {
+    font-size: 20px;
+    gap: 9px;
+  }
+  .quantity select {
+    font-size: 22px;
+    width: 69px;
+    padding: 8px;
+  }
+  .channels {
+    gap: 7px;
+  }
+  .channels button {
+    font-size: 11px;
+    min-height: 91px;
+    padding: 15px 4px;
+  }
+  .reassurance > span {
+    font-size: 13px;
+  }
+  .links {
+    gap: 0;
+    margin-top: 18px;
+  }
+  .links button {
+    font-size: 11px;
+    padding: 10px 8px;
+  }
+  .desktopBreak {
+    display: none;
+  }
+}
+:global([data-theme="dark"]) .page {
+  --ink: #e4ecdf;
+  --muted: #aebcac;
+  --surface: #1d2821;
+  --line: #394839;
+  --soft: #243127;
+  --accent: #c5dfaa;
+  --accent-soft: #2d3c28;
+}
+:global([data-theme="dark"]) .start {
+  background: #c5dfaa;
+  color: #233b24;
+}
+:global([data-theme="dark"]) .emblem {
+  color: #335537;
+}
+:global([data-theme="dark"]) .email {
+  color: #aabdec;
+}
+:global([data-theme="dark"]) .slack {
+  color: #d6a7cc;
+}
+:global([data-theme="dark"]) .imessage,
+:global([data-theme="dark"]) .whatsapp {
+  color: #81d89a;
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .page {
+    --ink: #e4ecdf;
+    --muted: #aebcac;
+    --surface: #1d2821;
+    --line: #394839;
+    --soft: #243127;
+    --accent: #c5dfaa;
+    --accent-soft: #2d3c28;
+  }
+  :global(:root:not([data-theme="light"])) .start {
+    background: #c5dfaa;
+    color: #233b24;
+  }
+  :global(:root:not([data-theme="light"])) .emblem {
+    color: #335537;
+  }
+  :global(:root:not([data-theme="light"])) .email {
+    color: #aabdec;
+  }
+  :global(:root:not([data-theme="light"])) .slack {
+    color: #d6a7cc;
+  }
+  :global(:root:not([data-theme="light"])) .imessage,
+  :global(:root:not([data-theme="light"])) .whatsapp {
+    color: #81d89a;
+  }
+}
+
+.formFields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}

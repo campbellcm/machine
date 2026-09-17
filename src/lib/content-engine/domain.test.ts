@@ -97,6 +97,28 @@ describe("Content engine output boundaries", () => {
       2,
     );
   });
+  it("validates the requested quantity from one to ten", () => {
+    for (const count of [1, 10]) {
+      const raw = output();
+      raw.variants = Array.from({ length: count }, (_, n) => ({
+        ...raw.variants[0],
+        body: `I work at Acme. Distinct thought ${n}.`,
+      }));
+      expect(
+        validateGeneration(raw, [atom], "Acme", "linkedin", [], count).variants,
+      ).toHaveLength(count);
+      expect(() =>
+        validateGeneration(
+          raw,
+          [atom],
+          "Acme",
+          "linkedin",
+          [],
+          count === 1 ? 10 : 1,
+        ),
+      ).toThrow("Incorrect draft count");
+    }
+  });
   it("measures edits without keeping a second copy of text", () => {
     expect(editDistance("same text", "same text")).toBe(0);
     expect(editDistance("a b", "c d")).toBe(1);

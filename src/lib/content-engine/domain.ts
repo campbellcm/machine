@@ -10,7 +10,11 @@ export const profileSchema = z.object({
   voice: z.array(z.string().max(100)).max(8),
   examples: z.string().max(6000),
   avoid: short,
-  cadence: z.enum(["weekdays", "three", "weekly", "manual"]),
+  cadence: z.enum(["daily", "weekdays", "three", "weekly", "manual"]),
+  daily_count: z.number().int().min(1).max(10).default(3),
+  delivery_preference: z
+    .enum(["email", "slack", "imessage", "whatsapp"])
+    .default("email"),
   hour: z.number().int().min(0).max(23),
   timezone: z
     .string()
@@ -57,6 +61,8 @@ export const defaultProfile: ContentProfile = {
   examples: "",
   avoid: "Hype, invented anecdotes, engagement bait",
   cadence: "weekdays",
+  daily_count: 3,
+  delivery_preference: "email",
   hour: 9,
   timezone: "America/New_York",
   platform: "linkedin",
@@ -169,7 +175,8 @@ export const draftOutput = z.object({
         voiceScore: z.number().min(0).max(1),
       }),
     )
-    .length(3),
+    .min(1)
+    .max(10),
 });
 export type Atom = {
   id: string;
@@ -221,8 +228,11 @@ export function validateGeneration(
   company: string,
   target: "linkedin" | "x",
   avoid: string[],
+  expectedCount = 3,
 ) {
   const output = draftOutput.parse(raw);
+  if (output.variants.length !== expectedCount)
+    throw new Error("Incorrect draft count");
   if (output.platform !== target) throw new Error("Platform mismatch");
   const valid = output.variants.map((v) => {
     if (
@@ -267,7 +277,7 @@ export function validateGeneration(
         flags.push("A factual claim needs confirmation");
     return { ...v, riskFlags: [...new Set(flags)] };
   });
-  if (new Set(valid.map((v) => v.body.trim())).size !== 3)
+  if (new Set(valid.map((v) => v.body.trim())).size !== expectedCount)
     throw new Error("Duplicate variants");
   return {
     ...output,

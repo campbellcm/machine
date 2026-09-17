@@ -42,3 +42,7 @@ Source deletion/expiry invalidates dependent unpublished drafts and approvals. P
 Run `npm run lint`, `npm run typecheck`, `npm test`, `npm run db:seed`, `npm run build`, and `npm run test:e2e`. New tests cover all ten RLS tables, explicit source ACLs, consent, extraction, jobs, draft generation, optimistic revisions, review/export, immutable publication, source revocation, pause, output validation and provider-context minimization. Existing Home, Team, Rewards, setup and call tests remain in the suite.
 
 Rollback application UI by reverting the feature commit; disable AI in company strategy to stop preparation. Do not drop data tables to roll back the UI.
+
+## M7 daily setup update
+
+Apply migration 015 after 014 for the simplified setup screen. Employees select 1–10 draft options per daily generation; legacy profiles default to three. The daily cadence includes weekends. Delivery preference (email, Slack, iMessage or WhatsApp) is saved separately from actual delivery, which remains inside the app; none of those transports is connected by this update. Provider output and database persistence enforce the selected count. Output token allowance scales with the count, bounded at 12,000; existing request timeouts and retries still apply, and high-volume generation needs live provider verification. No new environment variables or services are required.

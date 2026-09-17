@@ -5,7 +5,7 @@ import { serviceDatabase } from "@/lib/supabase/server";
 import {
   contentPrompt,
   extractionPrompt,
-} from "@/lib/ai/prompts/content-engine-v1";
+} from "@/lib/ai/prompts/content-engine-v2";
 import {
   extractionSchema,
   draftOutput,
@@ -107,7 +107,9 @@ export async function processEngineJob(id: string) {
         const response = await client.responses.parse({
           model,
           store: false,
-          instructions: contentPrompt,
+          instructions:
+            contentPrompt +
+            ` Prepare exactly ${profile.daily_count} distinct draft variants. Prefer concise posts (under 900 characters for LinkedIn).`,
           input: JSON.stringify({
             company_strategy: {
               description: strategy.description,
@@ -141,7 +143,7 @@ export async function processEngineJob(id: string) {
             },
             recent_topics: context.recent,
           }),
-          max_output_tokens: 3800,
+          max_output_tokens: Math.min(12000, 600 + profile.daily_count * 1200),
           text: { format: zodTextFormat(draftOutput, "content_variants") },
         });
         if (response.status !== "completed") {
@@ -154,6 +156,7 @@ export async function processEngineJob(id: string) {
           context.company,
           profile.platform,
           strategy.avoid.split(/[,\n]/),
+          profile.daily_count,
         );
         usage = {
           model,
