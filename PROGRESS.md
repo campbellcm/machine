@@ -246,3 +246,10 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Leaderboard uses the same profile photos as Team and accessible LinkedIn/X icons for currently connected accounts. Live metadata uses existing membership-checked RPCs; unavailable photos fall back to initials.
 - Feed now uses two compact columns, six posts initially, per-post See more/See less, Show more posts, teammate/channel dropdowns and newest/oldest sorting. Filters reset pagination, empty states remain explicit, and full original-post links remain available.
 - Expanded existing desktop/mobile browser test to exercise post expansion and pagination. Unit tests and typecheck pass; release checks pending.
+
+- Independent review found no blockers. Hosted browser verified author filtering, oldest-first sorting, photos/icons and compact excerpts. Initial accessibility run found an unlabeled-role issue; corrected the connected-account container to a group. All 70 unit/database tests and 16 desktop/mobile browser/accessibility checks pass. PR #3 merged at 02992a8001b5036fd1a231a2796dbd7bbc53fc11; production deploy 6aac348a83321a0007fb3f13 published; live Home verified.
+
+## Rewards visual list — September 17, 2026
+
+- Founder requested a streamlined prize list with exciting visuals and leaderboards. Shared demo/live rows feature gold cash, tropical travel, violet laptop and blue generic-prize illustrations, large prize names, top-three standings with photos and relative score bars, expandable full standings and rules.
+- Demo laptop prize changed from Mac mini to MacBook Pro per latest request. No real reward amounts, rules or eligibility changed. CTA links to existing AI drafting; no automatic participation or publishing. No new database schema or external image service.

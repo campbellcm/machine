@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { demoData } from "@/lib/demo/data";
 import { demoReport, rankPeople } from "@/lib/v1/report";
+import { RewardRow } from "./reward-row";
 import { TeamAvatar } from "./team-avatar";
 import { PageHeading } from "@/components/shared";
 export function DemoTeam() {
@@ -82,7 +83,7 @@ export function DemoRewards() {
     {
       id: "2",
       title: "Open new doors",
-      prize: "A Mac mini",
+      prize: "MacBook Pro",
       metric: "clicks",
       start: "2026-09-01",
       end: "2026-09-30",
@@ -102,8 +103,8 @@ export function DemoRewards() {
     <div className="v1">
       <PageHeading
         eyebrow="A little recognition goes a long way"
-        title="Great work. Worth celebrating."
-        description="Your company picks the prize. Your team brings the momentum."
+        title="Your next big win."
+        description="Big rewards for the ideas only you can share. Pick your prize. Make your move."
       />
       <div className="v1-toolbar">
         <span className="v1-badge">
@@ -187,33 +188,12 @@ export function DemoRewards() {
         </form>
       )}
       {notice && <p role="status">{notice}</p>}
-      <div className="v1-grid">
-        {prizes.map((p) => {
-          const leaders = rankPeople(
-            demoReport(p.start, p.end).people,
-            p.metric,
-          ).slice(0, 3);
-          return (
-            <article className="v1-card" key={p.id}>
-              <span className="v1-badge">
-                Most {p.metric === "views" ? "impressions" : p.metric}
-              </span>
-              <h3 style={{ marginTop: 22 }}>{p.title}</h3>
-              <p className="v1-prize">{p.prize}</p>
-              <small>
-                {p.start} through {p.end}
-              </small>
-              <h4 style={{ marginTop: 24 }}>In the lead</h4>
-              <ol>
-                {leaders.map((l) => (
-                  <li key={l.id}>
-                    {l.name} <strong>{l[p.metric]?.toLocaleString()}</strong>
-                  </li>
-                ))}
-              </ol>
-              <small>Sample standings. Company fulfills the prize.</small>
-            </article>
-          );
+      <div className="rewards-list">
+        {prizes.map(p => {
+          const people = rankPeople(demoReport(p.start, p.end).people, p.metric);
+          return <RewardRow key={p.id} title={p.title} prize={p.prize} metric={p.metric === "views" ? "impressions" : p.metric} dates={`${p.start} — ${p.end}`} status="Sample competition" demo
+            leaders={people.map(l => ({ id: l.id, name: l.name, photo: l.photo_url, rank: l.rank, score: l[p.metric] ?? 0 }))}
+            rules="The highest score in the selected period leads this sample competition. Tied scores share a rank. These are illustrative prizes and results, not a live giveaway." />;
         })}
       </div>
     </div>

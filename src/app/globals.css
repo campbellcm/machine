@@ -2790,3 +2790,47 @@ h1 {
 .feed-expand { background:none; border:0; padding:0; color:var(--text); font:inherit; font-size:13px; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
 .feed-more { text-align:center; margin:24px 0; }
 @media(max-width:900px) { .feed-grid { grid-template-columns:1fr; } }
+
+/* Prize-led reward rows with an adjacent compact leaderboard. */
+.rewards-list { margin-top:28px; border-top:1px solid var(--line); }
+.reward-row { --prize-accent:#ba790d; display:grid; grid-template-columns:150px minmax(180px,1fr) minmax(250px,1.1fr); gap:28px; padding:30px 0 20px; border-bottom:1px solid var(--line); align-items:center; }
+.reward-escape { --prize-accent:#168878; }
+.reward-tech { --prize-accent:#8758d4; }
+.reward-gift { --prize-accent:#3c78ba; }
+.reward-art { position:relative; height:176px; border-radius:18px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:linear-gradient(145deg,#fff0b0,#e7b347); color:#674400; }
+.reward-escape .reward-art { background:linear-gradient(155deg,#9cebe0 0%,#68d5d5 52%,#fbd69d 53%,#ffc29e 100%); color:#185b55; }
+.reward-tech .reward-art { background:radial-gradient(ellipse at 70% 20%,#dac6ff,#9682d9 60%,#655397); color:#251743; }
+.reward-gift .reward-art { background:linear-gradient(135deg,#bde9ff,#8bafe9); color:#254368; }
+.reward-art > svg { width:88px; height:88px; position:relative; transform:rotate(-9deg); filter:drop-shadow(0 8px 7px #0002); }
+.reward-art-orbit { position:absolute; width:150px; height:150px; border:1px solid #ffffff90; border-radius:50%; top:-35px; right:-45px; box-shadow:0 0 0 20px #ffffff20,0 0 0 40px #ffffff15; }
+.reward-art-label { position:absolute; bottom:16px; font-size:9px; font-weight:800; letter-spacing:2px; }
+.reward-story { min-width:0; }
+.reward-status { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+.reward-status > span { width:6px; height:6px; border-radius:50%; background:var(--prize-accent); }
+.v1 .reward-prize { font-size:clamp(26px,2.8vw,38px); font-weight:750; letter-spacing:-1.4px; line-height:1.15; margin:12px 0 8px; overflow-wrap:anywhere; }
+.reward-story h3 { font-size:13px; font-weight:500; margin:0; color:var(--muted); }
+.reward-goal { font-size:13px; margin:16px 0 4px; font-weight:600; }
+.reward-story small { font-size:11px; color:var(--muted); }
+.reward-cta { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:650; margin-top:16px; }
+.reward-competition { min-width:0; }
+.reward-leader-heading { display:flex; align-items:center; gap:7px; margin-bottom:14px; }
+.reward-leader-heading svg { color:var(--muted); }
+.reward-leader-heading h4 { font-size:12px; margin:0; }
+.reward-leader-heading > span { margin-left:auto; color:var(--muted); font-size:10px; }
+.reward-standings { list-style:none; padding:0; margin:0; display:grid; gap:12px; }
+.reward-standing { display:flex; align-items:center; gap:9px; }
+.reward-standing .team-avatar { width:30px; height:30px; flex-basis:30px; font-size:10px; }
+.reward-rank { width:16px; text-align:center; font-size:11px; color:var(--muted); }
+.reward-rank.first { font-weight:800; color:var(--text); }
+.reward-standing-name { flex:1; min-width:0; }
+.reward-standing-name strong { display:block; font-size:12px; font-weight:550; overflow-wrap:anywhere; }
+.reward-meter { display:block; height:3px; background:var(--line); border-radius:4px; margin-top:7px; overflow:hidden; }
+.reward-meter > span { display:block; height:100%; background:var(--prize-accent); border-radius:4px; }
+.reward-score { font-size:12px; font-variant-numeric:tabular-nums; }
+.reward-more { margin-top:14px; font-size:11px; }
+.reward-more[open] summary { margin-bottom:14px; }
+.reward-footer { grid-column:2 / -1; color:var(--muted); font-size:11px; }
+.reward-footer p { font-size:12px; line-height:1.6; }
+.reward-footer summary, .reward-more summary { cursor:pointer; }
+@media(max-width:1100px) { .reward-row { grid-template-columns:120px minmax(0,1fr); gap:20px; } .reward-competition { grid-column:2; } .reward-art { align-self:start; height:155px; } }
+@media(max-width:600px) { .reward-row { grid-template-columns:88px minmax(0,1fr); gap:16px; padding-top:24px; } .reward-art { height:120px; border-radius:14px; } .reward-art > svg { width:62px; height:62px; } .reward-art-label { font-size:7px; letter-spacing:1px; bottom:12px; } .reward-competition,.reward-footer { grid-column:1 / -1; } .v1 .reward-prize { font-size:28px; } }

@@ -52,6 +52,12 @@ test("team search and sample daily routine", async ({ page }) => {
 });
 test("sample reward creation", async ({ page }) => {
   await page.goto("/demo/rewards");
+  await expect(page.getByRole("heading", { name: "$1,000", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "MacBook Pro", exact: true })).toBeVisible();
+  const reward = page.locator(".reward-row").first();
+  await expect(reward.getByRole("listitem")).toHaveCount(3);
+  await reward.getByText("See all 12 participants").click();
+  await expect(reward.getByRole("listitem")).toHaveCount(12);
   await page.getByRole("button", { name: "Create sample reward" }).click();
   await page.getByLabel("Title", { exact: true }).fill("October creativity");
   await page.getByLabel("What’s the prize?").fill("A team lunch");
