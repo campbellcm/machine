@@ -166,3 +166,13 @@ Work is on `m1-live-workspace`. This branch includes the connected pilot path ra
 - A dedicated new Supabase project is required for these initial migrations. The grants-hardening migration operates on the application’s public schema; do not apply it indiscriminately to a shared existing database.
 - A filesystem process repeatedly created duplicate generated `.next/types/* 2.ts` files. TypeScript excludes only these duplicate generated files; real application sources and canonical Next types remain checked.
 - No service secrets exist in the repository. `.env.example` describes setup; `.env.local` is ignored.
+
+
+## GitHub repository upload — September 17, 2026
+
+- User explicitly requested publishing the built app to their `machine` repository through the established GitHub connector.
+- Confirmed destination `campbellcm/machine` was empty and public; uploaded all 118 tracked project files to `main` through the connector. No credentials, dependencies, or build outputs were included.
+- Application import commit: `83de06a119a8caa094c33bb3fdd856e71d4aab73`. Its Git tree `0f18f7c5bd7c86b90323051d5fb9515711cdcb67` exactly matches local application commit `2ebff2b`.
+- GitHub Actions run: https://github.com/campbellcm/machine/actions/runs/35172396749 (running when this note was written; no success claimed).
+- Local `origin` now points to https://github.com/campbellcm/machine.git. Connector-created commits use a separate history from the local build commits; fetch and reconcile intentionally before a future command-line push. Do not force-push over GitHub history.
+- This publishes source code, not a hosted website. Supabase, LinkedIn, AI, email, and hosting credentials remain unconfigured. Earlier notes about the absence of a remote describe the earlier build session.
