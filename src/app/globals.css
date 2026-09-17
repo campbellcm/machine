@@ -2757,9 +2757,9 @@ h1 {
 @media(max-width:680px){.v1-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.v1-grid,.v1-two{grid-template-columns:1fr}.v1-card{padding:20px}.v1-number{font-size:1.85rem}.v1-hero{padding:24px}.v1-filters{width:100%}.v1-filters label{flex:1;min-width:110px}.v1-filters input{width:100%}}
 
 /* Compact team roster: one identity and two connection columns per row. */
-.team-list { container-type:inline-size; margin:24px 0; border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+.team-list { container-type:inline-size; margin:24px 0; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
 .team-row { display:grid; grid-template-columns:minmax(220px,1.4fr) repeat(2,minmax(150px,1fr)); gap:24px; padding:18px 24px; align-items:center; }
-.team-row + .team-row { border-top:1px solid var(--border); }
+.team-row + .team-row { border-top:1px solid var(--line); }
 .team-person { display:flex; align-items:center; gap:14px; min-width:0; }
 .team-person h3, .team-channel h4 { overflow-wrap:anywhere; margin:0; font-size:14px; }
 .team-person p { margin:3px 0 0; font-size:13px; }
