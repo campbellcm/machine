@@ -11,6 +11,7 @@ import {
 import { contentDemo } from "@/lib/content-engine/demo";
 import type { EngineData, EngineDraft } from "@/lib/content-engine/types";
 import styles from "./engine.module.css";
+import { DailyDraftSetup } from "./daily-draft-setup";
 type Command = (
   operation: string,
   input?: Record<string, unknown>,
@@ -50,7 +51,7 @@ export function ContentEngine({
   const router = useRouter();
   const [sample, setSample] = useState(data);
   const current = demo ? sample : data;
-  const [tab, setTab] = useState("Today"),
+  const [tab, setTab] = useState("Setup"),
     [admin, setAdmin] = useState(false),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
@@ -220,13 +221,35 @@ export function ContentEngine({
       ].includes(d.state),
   );
   const enabled = current.profile?.enrolled;
+  if (!admin && tab === "Setup")
+    return (
+      <DailyDraftSetup
+        data={current}
+        demo={demo}
+        busy={busy}
+        message={message}
+        command={command}
+        onDrafts={() => setTab("Drafts")}
+        onSettings={() => setTab("Today")}
+        onAdmin={() => {
+          setAdmin(true);
+          setTab("Overview");
+        }}
+      />
+    );
   return (
     <div className={styles.root} aria-busy={busy}>
       <header className={styles.heading}>
         <div>
-          <p className={styles.eyebrow}>Your experience. A daily head start.</p>
-          <h1>Let your ideas do more.</h1>
-          <p>Thoughtful posts. Your voice. Your final say.</p>
+          <button
+            onClick={() => {
+              setAdmin(false);
+              setTab("Setup");
+            }}
+          >
+            ← Daily drafts
+          </button>
+          <h1>{admin ? "Company content settings" : "Your content"}</h1>
         </div>
         {current.admin && (
           <button
@@ -701,6 +724,7 @@ function Onboarding({
                 value={p.cadence}
                 onChange={(e) => set("cadence", e.target.value)}
               >
+                <option value="daily">Every day</option>
                 <option value="weekdays">Every weekday</option>
                 <option value="three">Monday, Wednesday, Friday</option>
                 <option value="weekly">Once a week · Monday</option>

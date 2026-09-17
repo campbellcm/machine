@@ -46,6 +46,9 @@ test("team search and sample daily routine", async ({ page }) => {
     page.getByRole("list", { name: "Team members" }).getByRole("listitem"),
   ).toHaveCount(1);
   await page.getByRole("link", { name: "AI", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Content preferences", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Today’s post" }),
   ).toBeVisible();
@@ -115,7 +118,7 @@ test("AI company review returns final approval to the employee", async ({
 }) => {
   await page.goto("/demo/ai");
   await page
-    .getByRole("button", { name: "AI administration", exact: true })
+    .getByRole("button", { name: "Company settings", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Content Strategy", exact: true })
@@ -148,4 +151,48 @@ test("AI company review returns final approval to the employee", async ({
   await expect(
     page.getByRole("button", { name: "Copy approved post", exact: true }),
   ).toBeVisible();
+});
+
+test("simple AI preferences save quantity and label unavailable delivery honestly", async ({
+  page,
+}) => {
+  await page.goto("/demo/ai");
+  await expect(
+    page.getByRole("heading", {
+      name: "Let AI draft your content",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Drafts per day").locator("option")).toHaveCount(
+    10,
+  );
+  await page.getByLabel("Drafts per day").selectOption("10");
+  await page.getByRole("button", { name: "WhatsApp", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "WhatsApp", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByText(
+      "WhatsApp delivery is not connected yet. Your drafts will be available here in the app.",
+    ),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Save daily drafts", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText("10 drafts per day");
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await page.getByRole("button", { name: "Your drafts", exact: false }).click();
+  await expect(
+    page.getByRole("heading", { name: "Your drafts", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "← Daily drafts", exact: true })
+    .click();
+  await expect(page.getByLabel("Drafts per day")).toHaveValue("10");
 });

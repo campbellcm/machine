@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M6 — opt-in AI content engine, approved manual-source vertical slice.
+Current milestone: M7 — simple daily AI draft setup.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -267,3 +267,11 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Validation: local production build, lint, typecheck and unit/database suite pass before release; hosted browser regression results will be recorded after CI. Source notes must be manually anonymized; automated contact/secret redaction is not comprehensive anonymization.
 
 - Release checks: independent security review cleared; GitHub CI at 94f633c passed 87 unit/database tests and all 18 desktop/mobile browser tests, including company review and dark-mode accessibility. Final ranking-feedback regression increases the local suite to 88 tests; final CI pending on that small follow-up.
+
+## M7 — simpler daily AI design
+
+- Founder requested a single focused AI screen: “Let AI draft your content”, 1–10 drafts per day, and Email/Slack/iMessage/WhatsApp delivery choices. Replaced the initial control-panel view with a centered daily-preferences card; draft review, source management and admin controls remain behind secondary links. Other primary tabs and the shared shell are unchanged.
+- Quantity is persisted and enforced in provider output and database inserts. Additive migration 015 supports daily cadence, quantity bounds and delivery preferences; existing profiles default to three drafts. Prompts are versioned as content-v2.
+- Delivery selection records a preference only: none of these four transports is connected, and each explicitly says drafts remain in the app. No phone number, credentials or new service connection is requested. Review never auto-publishes. This is a design/preference change, not a claim of implemented external delivery.
+- Independent review found possible misleading saved/resume states; corrected by clearing success state and disabling inputs during save, and requiring resume success.
+- Local checks: 90 unit/database tests, typecheck, lint and build passed. Hosted visual and browser checks pending.

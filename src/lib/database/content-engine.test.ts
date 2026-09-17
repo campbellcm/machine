@@ -318,6 +318,61 @@ describe("Content engine permissions and workflow", () => {
       /Approve/,
     );
   });
+  it("persists 1–10 daily preferences and generates the exact selected count", async () => {
+    for (const count of [1, 10]) {
+      await db.exec("reset role;begin");
+      try {
+        await as(member);
+        await command("profile", {
+          config: {
+            ...defaultProfile,
+            cadence: "daily",
+            daily_count: count,
+            delivery_preference: "whatsapp",
+          },
+          consent: true,
+          step: 6,
+        });
+        expect(
+          await value(
+            "select config->>'delivery' from ce_profiles where user_id=$1",
+            [member],
+          ),
+        ).toBe("app");
+        const queued = await command("generate", {
+          id: idea,
+          key: crypto.randomUUID(),
+        });
+        const job = await claim(queued.id);
+        await finish(job, {
+          platform: "linkedin",
+          topic: "Ownership",
+          variants: Array.from({ length: count }, (_, n) => ({
+            body: `I work at Acme. Ownership option ${n}.`,
+            riskFlags: [],
+            sourceIds: [source],
+            atomIds: [atom],
+          })),
+        });
+        expect(
+          await value(
+            "select count(*)::int from ce_draft_meta where job_id=$1",
+            [queued.id],
+          ),
+        ).toBe(count);
+      } finally {
+        await db.exec("rollback");
+      }
+    }
+    await as(member);
+    await expect(
+      command("profile", {
+        config: { ...defaultProfile, daily_count: 11 },
+        consent: true,
+        step: 6,
+      }),
+    ).rejects.toThrow(/ce_daily_count_valid/);
+  });
   it("cancels in-flight work on pause and invalidates drafts on source removal", async () => {
     await as(member);
     const id = (

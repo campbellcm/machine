@@ -94,3 +94,7 @@ Until resolved, avoid committing to a paid provider or unsupported connection me
 ## September 17 AI-tab content engine amendment
 
 The founder adopted `docs/content-engine/BUILD-SPEC.md` for the AI tab. Implement the approved manual-source → evidence → personalized draft → author review → export vertical slice first. Employee and admin controls remain local to AI. Existing global routes, Home, Team, Rewards, authentication and navigation are unchanged. No automatic publication; explicit author approval and copy/export are the initial path. Explicit shared-user ACLs govern access; editable role descriptions only guide relevance. See `docs/content-engine/IMPLEMENTATION.md` for shipped scope, setup and deferred integrations. This amendment supersedes conflicting older AI-provider UI details, but does not claim the complete original V1 roadmap is delivered.
+
+## Simple AI setup amendment
+
+The founder’s latest design replaces the default AI control panel with “Let AI draft your content,” selectable 1–10 drafts per day, and Email/Slack/iMessage/WhatsApp delivery preferences. Keep advanced content/admin workflows accessible through secondary links. Save the requested quantity and use it in daily generation. Delivery preferences must not appear connected until an actual integration exists; current drafts remain available inside the app. Preserve author approval and the rest of the four-tab app.
