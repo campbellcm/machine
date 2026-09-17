@@ -1,0 +1,13 @@
+export default async function handler() {
+  const secret = Netlify.env.get("CRON_SECRET");
+  const origin = Netlify.env.get("URL");
+  if (!secret || !origin)
+    return new Response("Setup required", { status: 503 });
+  const response = await fetch(new URL("/api/cron", origin), {
+    headers: { Authorization: `Bearer ${secret}` },
+    signal: AbortSignal.timeout(25000),
+  });
+  if (!response.ok) throw new Error("Maintenance worker failed");
+  return new Response(null, { status: 204 });
+}
+export const config = { schedule: "7,22,37,52 * * * *" };

@@ -12,9 +12,9 @@ export default function Setup() {
       <span className="eyebrow">Launch checklist</span>
       <h1>Make this workspace yours.</h1>
       <p>
-        Follow these steps to enable real accounts, private drafts, and LinkedIn
-        publishing. Keep secret keys in your hosting settings, never in a post
-        or chat.
+        Follow these steps to enable real accounts, private daily drafts, and
+        LinkedIn/X publishing. Keep secret keys in your hosting settings, never
+        in a post or chat.
       </p>
       <div className="live-grid">
         <section className="live-card">
@@ -113,19 +113,39 @@ export default function Setup() {
         </Link>
       </p>
       <section className="live-card">
-        <h2>AI drafts and invitations</h2>
+        <h2>Daily AI drafts and invitations</h2>
         <p>
-          For interview-based generation, add <code>ANTHROPIC_API_KEY</code> and{" "}
+          For Claude generation, add <code>ANTHROPIC_API_KEY</code> and{" "}
           <code>ANTHROPIC_MODEL</code>. Set a spending limit in your Anthropic
-          account. For invitations, configure <code>RESEND_API_KEY</code> and a
-          verified <code>EMAIL_FROM</code>.
+          account. For OpenAI, add OPENAI_API_KEY and OPENAI_MODEL. Daily
+          drafting uses your company API access, not employees’ chat
+          subscriptions. For invitations, configure <code>RESEND_API_KEY</code>{" "}
+          and a verified <code>EMAIL_FROM</code>.
         </p>
         <p>
           For scheduled publishing and challenge settlement, set{" "}
-          <code>CRON_SECRET</code> and enable the supplied 15-minute Vercel
-          schedule on a plan that supports it. For click attribution, set{" "}
+          <code>CRON_SECRET</code> in Netlify’s function environment. The
+          included scheduled functions run on published Netlify deploys every 15
+          minutes. Daily jobs handle two members per slot and retry failures at
+          most three times. For click attribution, set{" "}
           <code>VISITOR_HASH_SALT</code> to a random secret.
         </p>
+      </section>
+      <section className="live-card">
+        <h2>Connect X profiles</h2>
+        <p>
+          Create an X developer app with OAuth 2.0 Web App authentication. Add
+          your HTTPS domain followed by <code>/api/social/x/callback</code>. Set{" "}
+          <code>X_CLIENT_ID</code> and <code>X_CLIENT_SECRET</code>; use the
+          same token encryption key as LinkedIn. API access may have separate
+          provider charges.
+        </p>
+        <p>
+          This pilot requests user/profile and post permissions with short-lived
+          tokens. Users reconnect after expiry. Automatic X token refresh,
+          analytics sync, and scheduled X posting are not enabled.
+        </p>
+        <a href="https://developer.x.com/">Open X developers ↗</a>
       </section>
       <h2>Implementation status</h2>
       <p>
@@ -142,9 +162,10 @@ export default function Setup() {
         ))}
       </div>
       <p>
-        Advanced integrations, analytics access, billing, and payroll have
-        additional account and review requirements. See the project’s
-        implementation status before inviting a broader team.
+        Native work-source connections and social analytics still need
+        additional implementation and provider access. Payroll and billing are
+        outside V1. See the project’s implementation status before inviting a
+        broader team.
       </p>
     </main>
   );

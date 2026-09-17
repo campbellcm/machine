@@ -1,76 +1,38 @@
-import Link from "next/link";
 import { workspace } from "@/lib/supabase/server";
-export default async function Dashboard() {
-  const { db, member, org } = await workspace();
-  const admin = ["owner", "admin", "viewer"].includes(member.role);
-  const [{ count: posts }, { count: clicks }, { count: conversions }] =
-    await Promise.all([
-      db
-        .from("drafts")
-        .select("*", { count: "exact", head: true })
-        .eq("organization_id", org.id)
-        .eq("status", "published"),
-      db
-        .from("link_clicks")
-        .select("*", { count: "exact", head: true })
-        .eq("organization_id", org.id)
-        .eq("is_bot", false)
-        .eq("is_duplicate", false),
-      db
-        .from("conversions")
-        .select("*", { count: "exact", head: true })
-        .eq("organization_id", org.id),
-    ]);
+import { dateRange, reportSchema } from "@/lib/v1/report";
+import { HomeDashboard } from "@/components/v1/home";
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ start?: string; end?: string }>;
+}) {
+  const { db, org } = await workspace();
+  const q = await searchParams;
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: org.timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const range = dateRange(q.start, q.end, today);
+  const { data, error } = await db.rpc("home_report", {
+    org: org.id,
+    start_day: range.start,
+    end_day: range.end,
+  });
+  const parsed = reportSchema.safeParse(data);
+  if (error || !parsed.success)
+    return (
+      <section className="live-card">
+        <h1>Home is waiting for your database update.</h1>
+        <p>
+          Apply the latest migrations in Setup, then refresh. We won’t show
+          incomplete results as zero.
+        </p>
+        <a href="/setup">Open setup</a>
+      </section>
+    );
   return (
-    <>
-      <span className="eyebrow">Your live workspace</span>
-      <h1>
-        {member.display_name
-          ? `Welcome back, ${member.display_name.split(" ")[0]}.`
-          : "Let’s get your voice out there."}
-      </h1>
-      <p>
-        {admin ? "Your company’s" : "Your"} real activity, all time. Sample data
-        is never included.
-      </p>
-      <div className="live-grid">
-        {[
-          ["Published posts", posts],
-          ["Unique clicks", clicks],
-          ["Conversions", conversions],
-        ].map(([label, value]) => (
-          <section className="live-card" key={label}>
-            <p>{label}</p>
-            <div className="live-stat">{value ?? 0}</div>
-          </section>
-        ))}
-      </div>
-      {["owner", "admin", "teammate"].includes(member.role) && (
-        <section className="live-card">
-          <h2>
-            {member.opted_in_at
-              ? "Share something you learned."
-              : "Participation starts with you."}
-          </h2>
-          <p>
-            {member.opted_in_at
-              ? "Write a draft, review the exact words, and choose when to publish."
-              : "Join the program and complete your profile before creating posts."}
-          </p>
-          <Link
-            className="live-button"
-            href={
-              member.opted_in_at ? "/workspace/drafts" : "/workspace/profile"
-            }
-          >
-            {member.opted_in_at ? "Create a draft" : "Complete my profile"}
-          </Link>
-        </section>
-      )}
-      <p>
-        LinkedIn impressions appear only after approved analytics access. A
-        manual post without its URL is marked unverified.
-      </p>
-    </>
+    <HomeDashboard report={parsed.data} {...range} timezone={org.timezone} />
   );
 }

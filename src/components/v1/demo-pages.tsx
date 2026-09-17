@@ -1,0 +1,362 @@
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { demoData } from "@/lib/demo/data";
+import { demoReport, rankPeople } from "@/lib/v1/report";
+import { PageHeading } from "@/components/shared";
+export function DemoTeam() {
+  const [query, setQuery] = useState("");
+  return (
+    <div className="v1">
+      <PageHeading
+        eyebrow="Different voices. One team."
+        title="Better, together."
+        description="See who’s ready to share, and where they’re connected."
+      />
+      <div className="v1-toolbar">
+        <span className="v1-badge">Fictional connection states</span>
+        <label>
+          Find a teammate
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or role"
+          />
+        </label>
+        <Link href="/setup" className="live-button">
+          Set up your real team
+        </Link>
+      </div>
+      <div className="v1-grid">
+        {demoData.teammates
+          .filter((p) =>
+            (p.name + " " + p.title)
+              .toLowerCase()
+              .includes(query.toLowerCase()),
+          )
+          .map((p) => (
+            <article className="v1-card" key={p.id}>
+              <span className={`avatar ${p.color}`}>{p.initials}</span>
+              <h3>{p.name}</h3>
+              <p>{p.title}</p>
+              <p>
+                <strong>LinkedIn</strong>
+                <small>
+                  {demoData.teammates.indexOf(p) < 8
+                    ? "Sample profile connected"
+                    : "Not connected · sample"}
+                </small>
+              </p>
+              <p>
+                <strong>X</strong>
+                <small>
+                  {demoData.teammates.indexOf(p) % 3 === 0
+                    ? "Sample profile connected"
+                    : "Not connected · sample"}
+                </small>
+              </p>
+            </article>
+          ))}
+      </div>
+    </div>
+  );
+}
+type Prize = {
+  id: string;
+  title: string;
+  prize: string;
+  metric: "views" | "clicks" | "leads" | "posts";
+  start: string;
+  end: string;
+};
+export function DemoRewards() {
+  const [prizes, setPrizes] = useState<Prize[]>([
+    {
+      id: "1",
+      title: "Make an impression",
+      prize: "$1,000",
+      metric: "views",
+      start: "2026-09-01",
+      end: "2026-09-30",
+    },
+    {
+      id: "2",
+      title: "Open new doors",
+      prize: "A Mac mini",
+      metric: "clicks",
+      start: "2026-09-01",
+      end: "2026-09-30",
+    },
+    {
+      id: "3",
+      title: "Start the conversation",
+      prize: "Two days in Miami",
+      metric: "leads",
+      start: "2026-09-01",
+      end: "2026-09-30",
+    },
+  ]);
+  const [show, setShow] = useState(false);
+  const [notice, setNotice] = useState("");
+  return (
+    <div className="v1">
+      <PageHeading
+        eyebrow="A little recognition goes a long way"
+        title="Great work. Worth celebrating."
+        description="Your company picks the prize. Your team brings the momentum."
+      />
+      <div className="v1-toolbar">
+        <span className="v1-badge">
+          Sample admin view · changes last until reload
+        </span>
+        <button className="live-button" onClick={() => setShow(!show)}>
+          {show ? "Close form" : "Create sample reward"}
+        </button>
+      </div>
+      {show && (
+        <form
+          className="v1-card v1-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            const start = String(f.get("start")),
+              end = String(f.get("end"));
+            if (end < start) {
+              setNotice("End date must follow the start.");
+              return;
+            }
+            setPrizes([
+              ...prizes,
+              {
+                id: crypto.randomUUID(),
+                title: String(f.get("title")),
+                prize: String(f.get("prize")),
+                metric: f.get("metric") as Prize["metric"],
+                start,
+                end,
+              },
+            ]);
+            setNotice("Sample reward created for this preview.");
+            setShow(false);
+          }}
+        >
+          <h2>Create a reward</h2>
+          <label>
+            Title
+            <input name="title" maxLength={100} required />
+          </label>
+          <label>
+            What’s the prize?
+            <input
+              name="prize"
+              maxLength={500}
+              required
+              placeholder="Cash, a product, an experience…"
+            />
+          </label>
+          <label>
+            Most
+            <select name="metric">
+              <option value="views">Views / impressions</option>
+              <option value="clicks">Unique clicks</option>
+              <option value="leads">Leads</option>
+              <option value="posts">Posts</option>
+            </select>
+          </label>
+          <div className="v1-filters">
+            <label>
+              Starts
+              <input
+                type="date"
+                name="start"
+                defaultValue="2026-09-01"
+                required
+              />
+            </label>
+            <label>
+              Ends
+              <input
+                type="date"
+                name="end"
+                defaultValue="2026-09-30"
+                required
+              />
+            </label>
+          </div>
+          <button className="live-button">Save sample reward</button>
+        </form>
+      )}
+      {notice && <p role="status">{notice}</p>}
+      <div className="v1-grid">
+        {prizes.map((p) => {
+          const leaders = rankPeople(
+            demoReport(p.start, p.end).people,
+            p.metric,
+          ).slice(0, 3);
+          return (
+            <article className="v1-card" key={p.id}>
+              <span className="v1-badge">
+                Most {p.metric === "views" ? "impressions" : p.metric}
+              </span>
+              <h3 style={{ marginTop: 22 }}>{p.title}</h3>
+              <p className="v1-prize">{p.prize}</p>
+              <small>
+                {p.start} through {p.end}
+              </small>
+              <h4 style={{ marginTop: 24 }}>In the lead</h4>
+              <ol>
+                {leaders.map((l) => (
+                  <li key={l.id}>
+                    {l.name} <strong>{l[p.metric]?.toLocaleString()}</strong>
+                  </li>
+                ))}
+              </ol>
+              <small>Sample standings. Company fulfills the prize.</small>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+export function DemoAI() {
+  const [provider, setProvider] = useState("OpenAI");
+  const [role, setRole] = useState("Product designer");
+  const [active, setActive] = useState(false);
+  const [generated, setGenerated] = useState(false);
+  const [hour, setHour] = useState("09:00");
+  return (
+    <div className="v1">
+      <PageHeading
+        eyebrow="Your experience. A daily head start."
+        title="Let your ideas do more."
+        description="Three post options every day. Your voice, your final say."
+      />
+      <div className="v1-hero">
+        <span className="v1-badge">
+          {active ? "Sample routine on" : "Your daily writing partner"}
+        </span>
+        <h2>
+          Show up consistently.
+          <br />
+          Keep sounding like you.
+        </h2>
+        <p>
+          Choose your AI, tell it what you do, and make room for good ideas.
+        </p>
+      </div>
+      <div className="v1-two">
+        <form
+          className="v1-card v1-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setActive(true);
+          }}
+        >
+          <h2>Your daily drafts</h2>
+          <label>
+            Writing AI
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+            >
+              <option>OpenAI</option>
+              <option>Claude</option>
+            </select>
+          </label>
+          <label>
+            Your role
+            <input
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+              maxLength={120}
+            />
+          </label>
+          <label>
+            Daily delivery time
+            <input
+              type="time"
+              value={hour}
+              onChange={(e) => setHour(e.target.value)}
+              required
+            />
+          </label>
+          <button className="live-button">
+            {active ? "Update sample routine" : "Try sample routine"}
+          </button>
+          <small>
+            Preview only. No schedule is created and no AI request is sent.
+          </small>
+        </form>
+        <section className="v1-card">
+          <h2>
+            {active ? "A little head start, every day." : "Ready when you are."}
+          </h2>
+          <p>
+            {active
+              ? `${provider} · ${role} · daily at ${hour}`
+              : "Start a sample routine to explore the workflow."}
+          </p>
+          <button
+            className="live-button secondary"
+            onClick={() => setGenerated(true)}
+          >
+            Preview three draft options
+          </button>
+          {active && (
+            <button
+              className="live-button secondary"
+              onClick={() => setActive(false)}
+            >
+              Pause sample routine
+            </button>
+          )}
+          <p className="v1-note">
+            Real daily generation uses your company’s API setup, approved
+            business context, and your role. Personal ChatGPT and Claude
+            subscriptions are not connected.
+          </p>
+          <Link href="/setup">Enable real daily drafts →</Link>
+        </section>
+      </div>
+      {generated && (
+        <div className="v1-grid">
+          {[
+            "Share a lesson",
+            "Offer a practical tip",
+            "Start a conversation",
+          ].map((angle, i) => (
+            <section className="v1-card" key={angle}>
+              <span className="v1-badge">Option {i + 1} · sample</span>
+              <h3>{angle}</h3>
+              <textarea
+                aria-label={`Sample draft ${i + 1}`}
+                defaultValue={demoData.posts[i].body}
+              />
+              <small>
+                Prepared example. Editing here does not publish or save to a
+                real account.
+              </small>
+            </section>
+          ))}
+        </div>
+      )}
+      <section className="v1-card" style={{ marginTop: 24 }}>
+        <h2>Bring your work into the story.</h2>
+        <p>
+          Fathom, Slack, and CRM connections will add approved work context.
+          They are planned, not connected.
+        </p>
+        <div className="live-inline">
+          {["Fathom", "Slack", "CRM"].map((p) => (
+            <span key={p} className="v1-badge">
+              {p} · planned
+            </span>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

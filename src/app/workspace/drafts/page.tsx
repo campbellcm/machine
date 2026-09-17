@@ -39,23 +39,30 @@ export default async function Drafts({
     .order("updated_at", { ascending: false });
   return (
     <>
-      <h1>Make it sound like you.</h1>
+      <h3>Make it sound like you.</h3>
       {notice && (
         <p role="status" className="live-notice">
           {notice === "saved"
             ? "Saved."
             : notice === "published"
-              ? "Published on LinkedIn."
+              ? "Published."
               : notice === "uncertain"
-                ? "LinkedIn may have received this post. Check your profile before any further action. We will not retry automatically."
+                ? "The social network may have received this post. Check your profile before any further action. We will not retry automatically."
                 : notice === "not-configured"
-                  ? "Connect LinkedIn and complete service setup first."
+                  ? "Connect your selected social account and complete service setup first."
                   : "Could not complete that action. Refresh and check the draft, disclosure, connection, and review requirements."}
         </p>
       )}
       {member.opted_in_at && (
         <form action={saveDraft} className="live-card">
           <h2>Start a draft</h2>
+          <label>
+            Channel
+            <select name="channel">
+              <option value="linkedin">LinkedIn</option>
+              <option value="x">X</option>
+            </select>
+          </label>
           <label>
             Your post
             <textarea
@@ -75,6 +82,7 @@ export default async function Drafts({
       {drafts?.map((d) => (
         <article className="live-card" key={d.id}>
           <span className="status">
+            {d.channel === "x" ? "X · " : "LinkedIn · "}
             {d.status.replaceAll("_", " ")}
             {d.status === "published" && !d.verified ? " · unverified" : ""}
           </span>
@@ -84,6 +92,11 @@ export default async function Drafts({
           ) ? (
             <form action={saveDraft}>
               <input type="hidden" name="id" value={d.id} />
+              <input
+                type="hidden"
+                name="channel"
+                value={d.channel || "linkedin"}
+              />
               <input type="hidden" name="revision" value={d.revision} />
               <label>
                 Post text
@@ -91,7 +104,7 @@ export default async function Drafts({
                   name="body"
                   defaultValue={d.body}
                   required
-                  maxLength={3000}
+                  maxLength={d.channel === "x" ? 280 : 3000}
                 />
               </label>
               <button className="live-button secondary">
@@ -108,6 +121,11 @@ export default async function Drafts({
             !!campaigns?.length && (
               <form action={attachLink}>
                 <input type="hidden" name="id" value={d.id} />
+                <input
+                  type="hidden"
+                  name="channel"
+                  value={d.channel || "linkedin"}
+                />
                 <input type="hidden" name="revision" value={d.revision} />
                 <label>
                   Campaign
@@ -138,6 +156,11 @@ export default async function Drafts({
             ["draft", "changes_requested", "reviewed"].includes(d.status) && (
               <form action={transitionDraft}>
                 <input type="hidden" name="id" value={d.id} />
+                <input
+                  type="hidden"
+                  name="channel"
+                  value={d.channel || "linkedin"}
+                />
                 <input type="hidden" name="revision" value={d.revision} />
                 <input
                   type="hidden"
@@ -163,6 +186,11 @@ export default async function Drafts({
             ["owner", "admin"].includes(member.role) && (
               <form action={transitionDraft}>
                 <input type="hidden" name="id" value={d.id} />
+                <input
+                  type="hidden"
+                  name="channel"
+                  value={d.channel || "linkedin"}
+                />
                 <input type="hidden" name="revision" value={d.revision} />
                 <button className="live-button" name="operation" value="review">
                   Admin review complete
@@ -190,39 +218,62 @@ export default async function Drafts({
                     ({org.timezone})
                   </p>
                   <input type="hidden" name="id" value={d.id} />
+                  <input
+                    type="hidden"
+                    name="channel"
+                    value={d.channel || "linkedin"}
+                  />
                   <button className="live-button secondary">
                     Cancel schedule
                   </button>
                 </form>
               )}
-              <form action={scheduleLinkedIn}>
-                <input type="hidden" name="id" value={d.id} />
-                <input type="hidden" name="revision" value={d.revision} />
-                <label>
-                  Schedule date and time with timezone offset
+              {d.channel !== "x" && (
+                <form action={scheduleLinkedIn}>
+                  <input type="hidden" name="id" value={d.id} />
                   <input
-                    name="publish_at"
-                    placeholder="2026-10-01T09:00:00-04:00"
-                    required
+                    type="hidden"
+                    name="channel"
+                    value={d.channel || "linkedin"}
                   />
-                </label>
-                <small>
-                  Publishing runs every 15 minutes when the scheduled job is
-                  configured. Editing revokes the scheduled approval.
-                </small>
-                <button className="live-button secondary">
-                  Schedule approved post
-                </button>
-              </form>
+                  <input type="hidden" name="revision" value={d.revision} />
+                  <label>
+                    Schedule date and time with timezone offset
+                    <input
+                      name="publish_at"
+                      placeholder="2026-10-01T09:00:00-04:00"
+                      required
+                    />
+                  </label>
+                  <small>
+                    Publishing runs every 15 minutes when the scheduled job is
+                    configured. Editing revokes the scheduled approval.
+                  </small>
+                  <button className="live-button secondary">
+                    Schedule approved post
+                  </button>
+                </form>
+              )}
               <form action={recordManual}>
                 <input type="hidden" name="id" value={d.id} />
+                <input
+                  type="hidden"
+                  name="channel"
+                  value={d.channel || "linkedin"}
+                />
                 <input type="hidden" name="revision" value={d.revision} />
                 <label>
-                  LinkedIn post URL after you publish
+                  {d.channel === "x" ? "X" : "LinkedIn"} post URL after you
+                  publish
                   <input
                     name="url"
                     type="url"
-                    placeholder="https://www.linkedin.com/posts/…"
+                    placeholder={
+                      d.channel === "x"
+                        ? "https://x.com/yourname/status/123"
+                        : "https://www.linkedin.com/posts/…"
+                    }
+                    required={d.channel === "x"}
                   />
                 </label>
                 <label>
@@ -235,13 +286,20 @@ export default async function Drafts({
               </form>
               <form action={publishLinkedIn}>
                 <input type="hidden" name="id" value={d.id} />
+                <input
+                  type="hidden"
+                  name="channel"
+                  value={d.channel || "linkedin"}
+                />
                 <input type="hidden" name="revision" value={d.revision} />
                 <label>
                   <input name="confirmed" type="checkbox" required />
-                  Publish this saved, approved text to my connected LinkedIn
-                  profile now.
+                  Publish this saved, approved text to my connected{" "}
+                  {d.channel === "x" ? "X" : "LinkedIn"} profile now.
                 </label>
-                <button className="live-button">Publish to LinkedIn</button>
+                <button className="live-button">
+                  Publish to {d.channel === "x" ? "X" : "LinkedIn"}
+                </button>
               </form>
             </>
           )}
@@ -252,8 +310,8 @@ export default async function Drafts({
           )}
           {d.status === "publish_uncertain" && (
             <p>
-              Delivery needs a manual check on LinkedIn. Automatic retries are
-              disabled to prevent duplicate posts.
+              Delivery needs a manual check on your social profile. Automatic
+              retries are disabled to prevent duplicate posts.
             </p>
           )}
         </article>

@@ -1,16 +1,18 @@
 import { notFound } from "next/navigation";
 import {
   ContentLibrary,
-  Team,
   Ideas,
   Settings,
   Roadmap,
 } from "@/components/workspace-pages";
 import { CallStories } from "@/components/calls/call-stories";
+import { DemoTeam, DemoRewards, DemoAI } from "@/components/v1/demo-pages";
 const pages = {
+  rewards: DemoRewards,
+  ai: DemoAI,
   calls: CallStories,
   content: ContentLibrary,
-  team: Team,
+  team: DemoTeam,
   ideas: Ideas,
   settings: Settings,
   roadmap: Roadmap,

@@ -1,55 +1,47 @@
-# Crewcast
+# Crewcast V1
 
-The project now includes a Supabase-backed live-workspace implementation alongside the fictional demo. **The full PRD is not complete and this is not yet a production release.** See `PROGRESS.md` for the implemented flows, test evidence, and remaining engineering work.
+Four tabs: **Home, Team, Rewards, AI**. LinkedIn and X are the two social channels. The fictional preview lives at `/demo`; private workspaces require Supabase sign-in. The current implementation is a pilot, not full PRD acceptance.
 
-- Open `http://127.0.0.1:3000/setup` for the in-app launch checklist.
-- Open `/demo` for sample data. Never enter private data into the sample workflow.
-- `/workspace` requires a configured Supabase project and authenticated membership.
+## Launch a private workspace on Netlify
 
-## Configure a private pilot
+1. Use Node 24 and a new dedicated Supabase project. Apply `supabase/migrations/*.sql` in filename order, including migrations 010–012 for V1. Never rerun applied migrations or put this initial schema in a shared existing database.
+2. Set the Supabase URL, publishable key, and server-only service key from `.env.example` in Netlify. Set `NEXT_PUBLIC_APP_URL` to the canonical HTTPS site URL. Configure Supabase Auth site/callback URLs, verified email delivery, and optional Google sign-in.
+3. Sign in, create a company, opt in, complete your job title/topics, and add approved public business context under Team → Company settings.
+4. Configure **OpenAI** (`OPENAI_API_KEY`, `OPENAI_MODEL`) and/or **Claude** (`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`). Use API credentials, not consumer subscription cookies or tokens. Set provider spending limits. Members choose an available provider in AI.
+5. Set a random `CRON_SECRET` in Netlify’s function environment. Two scheduled functions are deployed: daily drafting and maintenance, each every 15 minutes. They call protected same-site routes and only run on published deploys. No paid plan was selected. Verify a real scheduled invocation before enabling teammates.
+6. In AI, select a channel, local delivery hour/timezone, and approved notes. Start daily drafts or generate today’s options immediately. Each day produces one batch of three private drafts; retries reuse the same run with at most three attempts. Pause/settings changes invalidate in-flight results. Review and approve each saved draft before publishing.
+7. Configure LinkedIn OAuth with OpenID Connect and Share on LinkedIn, and callback `/api/social/linkedin/callback`. Set LinkedIn credentials and a random 32-byte base64 `TOKEN_ENCRYPTION_KEY`.
+8. Configure X OAuth 2.0 as a Web App with callback `/api/social/x/callback`, `X_CLIENT_ID`, and `X_CLIENT_SECRET`. This pilot uses short-lived authorization; users reconnect after expiry. No refresh-token support or scheduled X posting yet. API access can have separate provider costs.
+9. Configure `VISITOR_HASH_SALT`, create a tracked campaign, and configure the authenticated conversion webhook. No API keys in browser code. Resend is optional for invitations.
 
-Use a **new, dedicated Supabase project**, a Vercel project, and Node 24 LTS. No real accounts are configured in this checkout.
+Keep secrets in hosting environment settings or ignored `.env.local`, never Git or chat. Generate secrets with `openssl rand -base64 32`.
 
-1. Copy `.env.example` to `.env.local`. Fill in your Supabase URL, publishable key and server-only service-role key. Set `NEXT_PUBLIC_APP_URL` to your exact app origin. Do not mix `localhost` and `127.0.0.1` in the same sign-in session.
-2. Apply every SQL file in `supabase/migrations/` in filename order using Supabase migrations or its SQL editor. Do not rerun a migration after applying it. The database tests validate a clean install; do not apply the initial schema to a shared pre-existing database.
-3. In Supabase Auth, set the site URL and allowed callback URL (`APP_ORIGIN/auth/callback`). Keep the default magic-link email template for the PKCE flow. Enable Google if wanted. Configure custom SMTP with a verified sending domain for production.
-4. Restart the app, sign in, create a company, and complete the consent/profile screen. Test with a separate teammate account and a second company before sharing private data.
-5. Add Anthropic credentials for generation and Resend credentials for invitations. `ANTHROPIC_MODEL=claude-sonnet-5` was verified against current official docs on September 17, 2026. Configure provider spending limits.
-6. Create your LinkedIn developer app and enable OpenID Connect plus Share on LinkedIn. Register `HTTPS_APP_ORIGIN/api/social/linkedin/callback`. Add client credentials and a random 32-byte base64 token-encryption key. The app connects individual profiles, not company pages.
-7. Set `VISITOR_HASH_SALT` to a separate random secret. Create a campaign and add its tracked link to a draft. Publish manually first, then test direct posting with your own approved text. Configure the conversion webhook on your server; never put its API key in browser JavaScript.
-8. Set `CRON_SECRET` and deploy the supplied Vercel cron configuration on a plan supporting 15-minute jobs. Scheduled posting and challenge settlement do not run automatically on a plain local server. Verify one scheduled job before relying on it.
+## What works and what still needs accounts or engineering
 
-Generate independent secrets with `openssl rand -base64 32`. Keep them in `.env.local` or your hosting environment; never commit them or paste them into chat. Losing the encryption key makes existing social tokens unreadable and requires reconnecting profiles.
+- Home: date-filtered posts, unique clicks and leads, team rankings, and channel-filtered published content. Views and sales show unavailable until provider analytics/CRM ingestion exists.
+- Team: safe connection metadata, personal LinkedIn/X connections, profile/consent, and admin invitations/settings.
+- Rewards: admin-defined prize descriptions for clicks, leads or verified posts. All opted-in members participate; fixed rules lock on creation. Ties use earliest final scoring event then stable member ID. Finalize after 72 hours, then record company fulfillment. No payments or payroll. Impression/sales rewards and draft reward editing are not implemented.
+- AI: OpenAI/Claude provider generation, private schedules, three options per day, bounded retries, author approval. Uses approved company/profile/notes context. Native Fathom, Slack and CRM ingestion remains planned. It does not import personal AI chat history.
+- Daily queue processes two members per 15-minute slot (maximum 192 batches/day before retries). Busy periods delay delivery; expand worker capacity before a larger rollout. LinkedIn scheduled publishing processes one job per maintenance slot.
+- X drafts use a conservative 280-code-point limit; the provider still validates its own weighted character rules. A rejected or ambiguous post remains locked for manual verification to prevent duplicate publication.
+- Provider OAuth, generation, social publication, analytics and scheduled jobs still require real-account end-to-end verification. Supplying credentials does not complete the missing integrations.
 
-## Run and verify
+## Run and test
 
 ```sh
 npm ci
 npm run dev
-npm test
 npm run lint
 npm run typecheck
+npm test
 npm run build
-```
-
-`npm test` runs real PostgreSQL migrations and permission/state-machine tests in PGlite plus unit and mocked transport tests. It does not test Supabase Auth, PostgREST, Google, LinkedIn, Resend, or Anthropic against live services.
-
-For the browser suite on a host that permits Chromium:
-
-```sh
 npx playwright install chromium
 npm run test:e2e
 ```
 
-The unconfigured setup tests assume empty Supabase variables. Real-account acceptance still requires signup, invite acceptance, cross-company isolation through Supabase’s API, draft approval, manual/direct publication, scheduled publication, tracked click, conversion deduplication, and disconnect/removal verification.
+On a sandbox that blocks Turbopack’s local port binding, `npx next build --webpack` is an alternative. Browser tests can target a running build with `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npm run test:e2e`.
 
-## Operational limits
-
-- Confirm delivery on LinkedIn if a post says “publish uncertain.” Do not create a retry blindly: the provider may already have received it.
-- Personal post analytics requires separate provider access and is not implemented here.
-- All eight call-recording connectors, CRM sync, billing, weekly reports, and payroll still require engineering. Setup is not a substitute for those features.
-- Cash reward and payroll workflows remain disabled. External security review and Gusto approval are prerequisites for live payroll work.
-- No hosted deployment, real credentials, or remote CI run was created in this session.
+Tests cover real PostgreSQL migrations in PGlite, tenant and role isolation, private schedules, run leases/retries, approval and publishing protections, provider transport mocks, dates and rankings. Mock tests are not live provider verification. Chromium execution can be blocked by the host sandbox; CI runs the browser and accessibility suite.
 
 ---
 

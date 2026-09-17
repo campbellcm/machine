@@ -5,26 +5,23 @@ import { useSyncExternalStore } from "react";
 import {
   AudioLines,
   LayoutDashboard,
-  FileText,
-  Phone,
+  Gift,
+  Sparkles,
   Users,
-  Lightbulb,
   Settings2,
   ArrowUpRight,
   Sun,
   Moon,
   ChevronDown,
   FlaskConical,
-  Milestone,
 } from "lucide-react";
 import { productName } from "@/lib/config";
 import { Button } from "./ui/button";
 const nav = [
-  { href: "/demo", label: "Overview", icon: LayoutDashboard },
-  { href: "/demo/calls", label: "Call stories", icon: Phone },
-  { href: "/demo/content", label: "Content", icon: FileText },
-  { href: "/demo/team", label: "Your team", icon: Users },
-  { href: "/demo/ideas", label: "Ideas", icon: Lightbulb },
+  { href: "/demo", label: "Home", icon: LayoutDashboard },
+  { href: "/demo/team", label: "Team", icon: Users },
+  { href: "/demo/rewards", label: "Rewards", icon: Gift },
+  { href: "/demo/ai", label: "AI", icon: Sparkles },
 ];
 function subscribe(callback: () => void) {
   window.addEventListener("theme-change", callback);
@@ -94,22 +91,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Set up your live workspace <ArrowUpRight size={15} />
             </Link>
           </div>
-          <Link
-            className={`nav-item ${path === "/demo/roadmap" ? "active" : ""}`}
-            aria-current={path === "/demo/roadmap" ? "page" : undefined}
-            href="/demo/roadmap"
-          >
-            <Milestone size={19} />
-            Build roadmap
-          </Link>
-          <Link
-            className={`nav-item ${path === "/demo/settings" ? "active" : ""}`}
-            aria-current={path === "/demo/settings" ? "page" : undefined}
-            href="/demo/settings"
-          >
-            <Settings2 size={19} />
-            Settings
-          </Link>
           <div className="profile">
             <span className="avatar purple">AM</span>
             <div>
@@ -126,11 +107,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="breadcrumb-slash">/</span>
             <span>
               {path === "/demo"
-                ? "Overview"
-                : path
-                    .split("/")
-                    .pop()
-                    ?.replace(/^./, (c) => c.toUpperCase())}
+                ? "Home"
+                : path === "/demo/ai"
+                  ? "AI"
+                  : path
+                      .split("/")
+                      .pop()
+                      ?.replace(/^./, (c) => c.toUpperCase())}
             </span>
           </div>
           <div className="topbar-actions">
@@ -149,9 +132,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <Settings2 size={17} />
             </Link>
-            <Link href="/demo/roadmap" className="demo-pill">
+            <Link href="/setup" className="demo-pill">
               <span />
-              Foundation preview <ArrowUpRight size={13} />
+              V1 preview <ArrowUpRight size={13} />
             </Link>
           </div>
         </header>
