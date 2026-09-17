@@ -238,3 +238,11 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Demo uses fictional identities with Pravatar placeholder portraits (https://pravatar.cc). Live photos are member-owned HTTPS URLs set in profile settings, with initials for missing or failed images. Images load directly with no referrer, without a server-side proxy.
 - Additive migration 013 adds a profile photo column and tenant-checked photo read/write RPCs. Only the signed-in member can change their own photo; no credentials exposed.
 - Updated existing browser search selector for list semantics; added database coverage for own-photo updates and outsider denial.
+
+- Verification: 70 unit/database tests, lint/typecheck, production build and desktop/mobile browser/accessibility CI pass. Hosted preview confirms all twelve demo portraits loaded and tablet rows do not clip. Independent review fixes included container-based sizing and atomic profile/photo saves. PR #2 merged at c2c85fe2eba20e4d3b88095aa4849c715e8a88cb; production deploy 6aac30eada27e500085657b6 published successfully; live /demo/team verified.
+
+## Home feed refinement — September 17, 2026
+
+- Leaderboard uses the same profile photos as Team and accessible LinkedIn/X icons for currently connected accounts. Live metadata uses existing membership-checked RPCs; unavailable photos fall back to initials.
+- Feed now uses two compact columns, six posts initially, per-post See more/See less, Show more posts, teammate/channel dropdowns and newest/oldest sorting. Filters reset pagination, empty states remain explicit, and full original-post links remain available.
+- Expanded existing desktop/mobile browser test to exercise post expansion and pagination. Unit tests and typecheck pass; release checks pending.

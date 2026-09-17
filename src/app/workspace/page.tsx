@@ -32,7 +32,23 @@ export default async function Home({
         <a href="/setup">Open setup</a>
       </section>
     );
+  const [{ data: photos }, { data: connections }] = await Promise.all([
+    db.rpc("team_photos", { org: org.id }),
+    db.rpc("team_connections", { org: org.id }),
+  ]);
+  const report = parsed.data;
+  // Server component: evaluate credential expiry at request time.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  report.people = report.people.map(person => {
+    const photo = photos?.find((p: { user_id: string }) => p.user_id === person.id);
+    const connection = connections?.find((p: { user_id: string }) => p.user_id === person.id);
+    return { ...person, photo_url: photo?.photo_url, channels: [
+      ...(connection?.linkedin_name && (!connection.linkedin_expires || Date.parse(connection.linkedin_expires) > now) ? ["linkedin" as const] : []),
+      ...(connection?.x_name && (!connection.x_expires || Date.parse(connection.x_expires) > now) ? ["x" as const] : []),
+    ] };
+  });
   return (
-    <HomeDashboard report={parsed.data} {...range} timezone={org.timezone} />
+    <HomeDashboard report={report} {...range} timezone={org.timezone} />
   );
 }

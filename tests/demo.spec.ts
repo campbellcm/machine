@@ -10,13 +10,17 @@ test("four tabs, date filters, leaderboard and channel feed", async ({
   await expect(
     page.getByRole("navigation", { name: "Main navigation" }).getByRole("link"),
   ).toHaveText(["Home", "Team", "Rewards", "AI"]);
-  await expect(page.locator(".v1-post")).toHaveCount(24);
+  await expect(page.locator(".v1-post")).toHaveCount(6);
+  await page.getByRole("button", { name: /See more of/ }).first().click();
+  await expect(page.getByRole("button", { name: /See less of/ }).first()).toHaveAttribute("aria-expanded", "true");
+  await page.getByRole("button", { name: "Show more posts" }).click();
+  await expect(page.locator(".v1-post")).toHaveCount(12);
   await page.getByLabel("Feed channel").selectOption("x");
-  await expect(page.locator(".v1-post")).toHaveCount(8);
+  await expect(page.locator(".v1-post")).toHaveCount(6);
   await page.getByLabel("From", { exact: true }).fill("2026-08-01");
   await page.getByRole("button", { name: "Apply dates" }).click();
   await page.getByLabel("Feed channel").selectOption("all");
-  await expect(page.locator(".v1-post")).toHaveCount(30);
+  await expect(page.locator(".v1-post")).toHaveCount(6);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
