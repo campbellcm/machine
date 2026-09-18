@@ -23,6 +23,29 @@ export const reportSchema = z.object({
       url: z.string().nullable(),
       date: z.string(),
       author: z.string(),
+      source: z.string().optional(),
+      attribution: z
+        .object({
+          campaigns: z.array(z.string()),
+          clicks: z.number(),
+          leads: z.number(),
+        })
+        .optional(),
+      analytics: z
+        .object({
+          lifetime: z.number().nullable(),
+          growth: z.number().nullable(),
+          lastSync: z.string().nullable(),
+          from: z.string().nullable(),
+          to: z.string().nullable(),
+          history: z.array(
+            z.object({
+              observed_at: z.string(),
+              impressions: z.number().nullable(),
+            }),
+          ),
+        })
+        .optional(),
     }),
   ),
   feed_limit: z.number(),
@@ -52,8 +75,11 @@ export function demoReport(start: string, end: string): Report {
     id: p.id,
     name: p.name,
     role: p.title,
-    photo_url: `https://i.pravatar.cc/88?img=${[12,47,13,44,11,49,14,48,15,45,16,46][index]}`,
-    channels: [...(index < 8 ? ["linkedin" as const] : []), ...(index % 3 === 0 ? ["x" as const] : [])],
+    photo_url: `https://i.pravatar.cc/88?img=${[12, 47, 13, 44, 11, 49, 14, 48, 15, 45, 16, 46][index]}`,
+    channels: [
+      ...(index < 8 ? ["linkedin" as const] : []),
+      ...(index % 3 === 0 ? ["x" as const] : []),
+    ],
     posts: posts.filter((d) => d.userId === p.id).length,
     clicks: demoData.clicks.filter(
       (c) => c.userId === p.id && !c.isBot && !c.isDuplicate && inside(c.date),

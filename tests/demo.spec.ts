@@ -18,6 +18,17 @@ test("four tabs, date filters, leaderboard and channel feed", async ({
   await expect(
     page.getByRole("button", { name: /See less of/ }).first(),
   ).toHaveAttribute("aria-expanded", "true");
+  await page
+    .getByRole("button", { name: /Post details for/ })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Behind the post" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Lifetime impressions", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Close post details" }).click();
   await page.getByRole("button", { name: "Show more posts" }).click();
   await expect(page.locator(".v1-post")).toHaveCount(12);
   await page.getByLabel("Feed channel").selectOption("x");

@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M10 — reliable LinkedIn and X connections (first milestone of the September 18 roadmap).
+Current milestone: M11 — selected post tracking and honest reporting.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -301,3 +301,16 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Separate Netlify connection maintenance: at most one renewal per five-minute invocation, with 15-second provider timeout. On-demand renewal handles accounts not reached by the bounded pilot sweep. No external API usage, paid service, credentials, or live provider changes performed.
 - Official docs checked: https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code and https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens . Profile verification is explicitly distinct from publishing/analytics access.
 - Validation: 107 unit/database/API tests pass; typecheck and lint pass. Independent review cleared after fixing provider-profile ownership and a retry race. Definitive rejection recovery applies to manual API publication; scheduled publication retains conservative locking. Hosted build/browser checks pending. Real-account verification remains blocked by Supabase/social provider setup. Automatic tracking, analytics, scheduled X publication, external draft delivery and the remaining adopted features are still future milestones.
+
+
+## M10 release
+
+- PR #9 merged at 93bd381c6286112a405863a0315259b55958baa2 after independent review, 107 tests, lint/typecheck/build and existing desktop/mobile CI passed. Hosted setup preview confirmed new connection instructions. Supabase/provider configuration still required.
+
+## M11 — selected post tracking and reporting
+
+- Adds employee-enabled X recent-post import, private by default, explicit per-post inclusion/removal, pause and manual sync, with bounded automatic maintenance. Imports at most 100 original posts from the last 29 days; replies/reposts excluded. LinkedIn import remains access-blocked and visibly unavailable.
+- RLS-protected imports and snapshots; admins cannot see private imports or select another author's posts. Disconnect stops future saves; participation withdrawal/removal deletes imported data. No scraping or import of other accounts.
+- Home adds post-detail dialogs with lifetime impressions, timestamped snapshots and explicitly partial observed growth, plus equal-window comparisons for available report metrics. Newest 180 snapshots per post are loaded; historical snapshots remain in storage. Company impression totals remain unavailable until cross-network coverage is trustworthy.
+- Imported selected posts are deduplicated against matching X URLs in Home. Rewards still score legacy verified publications; imported-post scoring is not yet enabled. No unsupported analytics or business attribution is inferred.
+- Official X timeline and metrics docs checked. 114 unit/database/API tests, typecheck and lint pass. Independent review cleared after separating authoritative counts from capped feed queries, paginating own imports, and deferring scheduled renewal to its separate worker. Post details include safe lifetime tracked-link/campaign/lead aggregates. Hosted build/browser checks pending; real-account calls not performed.
