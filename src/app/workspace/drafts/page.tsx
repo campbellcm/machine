@@ -1,3 +1,4 @@
+import { connectionNotice } from "@/lib/social/health";
 import Link from "next/link";
 import { workspace } from "@/lib/supabase/server";
 import { saveDraft, transitionDraft, recordManual } from "../actions";
@@ -42,15 +43,28 @@ export default async function Drafts({
       <h3>Make it sound like you.</h3>
       {notice && (
         <p role="status" className="live-notice">
-          {notice === "saved"
-            ? "Saved."
-            : notice === "published"
-              ? "Published."
-              : notice === "uncertain"
-                ? "The social network may have received this post. Check your profile before any further action. We will not retry automatically."
-                : notice === "not-configured"
-                  ? "Connect your selected social account and complete service setup first."
-                  : "Could not complete that action. Refresh and check the draft, disclosure, connection, and review requirements."}
+          {notice.startsWith("rejected-")
+            ? "The network rejected this attempt; it was not published. " +
+              connectionNotice(notice.slice(9))
+            : [
+                  "reconnect",
+                  "busy",
+                  "setup",
+                  "permissions",
+                  "rate_limit",
+                  "unavailable",
+                  "connection-unavailable",
+                ].includes(notice)
+              ? connectionNotice(notice)
+              : notice === "saved"
+                ? "Saved."
+                : notice === "published"
+                  ? "Published."
+                  : notice === "uncertain"
+                    ? "The social network may have received this post. Check your profile before any further action. We will not retry automatically."
+                    : notice === "not-configured"
+                      ? "Connect your selected social account and complete service setup first."
+                      : "Could not complete that action. Refresh and check the draft, disclosure, connection, and review requirements."}
         </p>
       )}
       {member.opted_in_at && (

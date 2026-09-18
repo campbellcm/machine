@@ -50,18 +50,47 @@ afterAll(() => db.close());
 describe("Team profile photos", () => {
   it("allows own HTTPS photo updates, shares with colleagues, and denies outsiders", async () => {
     await as(member);
-    await db.query("select save_profile_photo($1,'https://example.com/member.jpg')", [org]);
-    await expect(db.query("select save_profile_photo($1,'javascript:alert(1)')", [org])).rejects.toThrow();
-    await expect(db.query("select save_profile_with_photo($1,'Changed','Designer','',array['one','two','three'],true,'http://invalid.test/photo.jpg')", [org])).rejects.toThrow();
-    expect(await scalar("select display_name from memberships where user_id=$1", [member])).toBe("Member");
+    await db.query(
+      "select save_profile_photo($1,'https://example.com/member.jpg')",
+      [org],
+    );
+    await expect(
+      db.query("select save_profile_photo($1,'javascript:alert(1)')", [org]),
+    ).rejects.toThrow();
+    await expect(
+      db.query(
+        "select save_profile_with_photo($1,'Changed','Designer','',array['one','two','three'],true,'http://invalid.test/photo.jpg')",
+        [org],
+      ),
+    ).rejects.toThrow();
+    expect(
+      await scalar("select display_name from memberships where user_id=$1", [
+        member,
+      ]),
+    ).toBe("Member");
     await as(owner);
-    const photos = await db.query<{ user_id: string; photo_url: string }>("select * from team_photos($1)", [org]);
-    expect(photos.rows.find(p => p.user_id === member)?.photo_url).toBe("https://example.com/member.jpg");
+    const photos = await db.query<{ user_id: string; photo_url: string }>(
+      "select * from team_photos($1)",
+      [org],
+    );
+    expect(photos.rows.find((p) => p.user_id === member)?.photo_url).toBe(
+      "https://example.com/member.jpg",
+    );
     await db.query("select save_profile_photo($1,'')", [org]);
-    expect(await scalar("select photo_url from memberships where user_id=$1", [member])).toBe("https://example.com/member.jpg");
+    expect(
+      await scalar("select photo_url from memberships where user_id=$1", [
+        member,
+      ]),
+    ).toBe("https://example.com/member.jpg");
     await as(outsider);
-    await expect(db.query("select * from team_photos($1)", [org])).rejects.toThrow(/Membership required/);
-    await expect(db.query("select save_profile_photo($1,'https://example.com/x.jpg')", [org])).rejects.toThrow(/Membership required/);
+    await expect(
+      db.query("select * from team_photos($1)", [org]),
+    ).rejects.toThrow(/Membership required/);
+    await expect(
+      db.query("select save_profile_photo($1,'https://example.com/x.jpg')", [
+        org,
+      ]),
+    ).rejects.toThrow(/Membership required/);
   });
 });
 describe("V1 private schedules and atomic daily jobs", () => {
@@ -291,5 +320,169 @@ describe("V1 private schedules and atomic daily jobs", () => {
     expect(await scalar("select status from drafts where id=$1", [id])).toBe(
       "published",
     );
+  });
+});
+
+describe("Connection renewal and safe health", () => {
+  async function store() {
+    await db.exec("reset role;set role service_role");
+    await db.query(
+      "select store_channel_connection($1,$2,'x','998877','@member','access-v1','refresh-v1',now()+interval '10 minutes')",
+      [org, member],
+    );
+  }
+  it("keeps credentials and rotation RPCs inaccessible to teammates and admins", async () => {
+    await store();
+    for (const id of [member, owner, outsider]) {
+      await as(id);
+      await expect(
+        db.query("select refresh_token_encrypted from social_accounts"),
+      ).rejects.toThrow(/permission denied/);
+      await expect(
+        db.query("select claim_connection_token($1,$2,'x')", [org, member]),
+      ).rejects.toThrow(/permission denied/);
+    }
+    await expect(
+      db.query("select * from team_connection_health($1)", [org]),
+    ).rejects.toThrow(/Membership required/);
+    await as(owner);
+    const rows = (
+      await db.query<Record<string, unknown>>(
+        "select * from team_connection_health($1)",
+        [org],
+      )
+    ).rows;
+    expect(rows[0].state).toBe("connected");
+    expect(rows[0]).not.toHaveProperty("refresh_token_encrypted");
+  });
+  it("does not allow another member to connect an owned social profile", async () => {
+    await store();
+    await db.exec("reset role");
+    await db.query(
+      "update memberships set opted_in_at=now() where organization_id=$1 and user_id=$2",
+      [org, owner],
+    );
+    await db.exec("set role service_role");
+    await expect(
+      db.query(
+        "select store_channel_connection($1,$2,'x','998877','Other','access',null,now()+interval '2 hours')",
+        [org, owner],
+      ),
+    ).rejects.toThrow(/Profile belongs/);
+    await db.query(
+      "select store_channel_connection($1,$2,'linkedin','linked-owner','Member','access',null,now()+interval '2 hours')",
+      [org, member],
+    );
+    await expect(
+      db.query(
+        "select store_social_account($1,$2,'linked-owner','Other','access',now()+interval '2 hours')",
+        [org, owner],
+      ),
+    ).rejects.toThrow(/Profile belongs/);
+  });
+  it("only releases a matching in-flight revision after definitive rejection", async () => {
+    await as(member);
+    const id = await scalar<string>(
+      "select save_channel_draft($1,null,'I work at Acme. A retry test',null,'x')",
+      [org],
+    );
+    await db.query("select transition_draft($1,1,'approve')", [id]);
+    await db.query("select claim_channel_publish($1,1,'x')", [id]);
+    await expect(
+      db.query("select reject_publish_attempt($1,1)", [id]),
+    ).rejects.toThrow(/permission denied/);
+    await db.exec("reset role;set role service_role");
+    expect(await scalar("select reject_publish_attempt($1,2)", [id])).toBe(
+      false,
+    );
+    expect(await scalar("select reject_publish_attempt($1,1)", [id])).toBe(
+      true,
+    );
+    expect(await scalar("select reject_publish_attempt($1,1)", [id])).toBe(
+      false,
+    );
+    await as(member);
+    expect(await scalar("select claim_channel_publish($1,1,'x')", [id])).toBe(
+      "I work at Acme. A retry test",
+    );
+  });
+  it("serializes rotation and prevents a disconnected account from being resurrected", async () => {
+    await store();
+    const claim = await scalar<{ kind: string; lease: string }>(
+      "select claim_connection_token($1,$2,'x')",
+      [org, member],
+    );
+    expect(claim.kind).toBe("refresh");
+    expect(
+      await scalar("select claim_connection_token($1,$2,'x')", [org, member]),
+    ).toEqual({ kind: "busy" });
+    await as(member);
+    await db.query("select disconnect_channel($1,'x')", [org]);
+    await db.exec("reset role;set role service_role");
+    expect(
+      await scalar(
+        "select finish_connection_refresh($1,$2,'x',$3,'new','new-refresh',now()+interval '2 hours')",
+        [org, member, claim.lease],
+      ),
+    ).toBe(false);
+    expect(
+      await scalar("select claim_connection_token($1,$2,'x')", [org, member]),
+    ).toEqual({ kind: "reconnect" });
+  });
+  it("rejects stale rotations after reconnect and preserves newly verified account health", async () => {
+    await store();
+    const claim = await scalar<{ lease: string }>(
+      "select claim_connection_token($1,$2,'x')",
+      [org, member],
+    );
+    await db.query(
+      "select store_channel_connection($1,$2,'x','998877','@member','replacement','replacement-refresh',now()+interval '2 hours')",
+      [org, member],
+    );
+    expect(
+      await scalar(
+        "select finish_connection_refresh($1,$2,'x',$3,'stale','stale-refresh',now()+interval '2 hours')",
+        [org, member, claim.lease],
+      ),
+    ).toBe(false);
+    await db.query(
+      "select record_connection_check($1,$2,'x','access-v1','reconnect')",
+      [org, member],
+    );
+    expect(
+      await scalar("select claim_connection_token($1,$2,'x')", [org, member]),
+    ).toMatchObject({ kind: "ready", encrypted: "replacement" });
+  });
+  it("does not replay timed-out rotations, and rotates credentials only once", async () => {
+    await store();
+    const claim = await scalar<{ lease: string }>(
+      "select claim_connection_token($1,$2,'x')",
+      [org, member],
+    );
+    expect(
+      await scalar(
+        "select finish_connection_refresh($1,$2,'x',$3,'new','rotated',now()+interval '2 hours')",
+        [org, member, claim.lease],
+      ),
+    ).toBe(true);
+    expect(
+      await scalar(
+        "select finish_connection_refresh($1,$2,'x',$3,'new','rotated',now()+interval '2 hours')",
+        [org, member, claim.lease],
+      ),
+    ).toBe(false);
+    await store();
+    await db.query("select claim_connection_token($1,$2,'x')", [org, member]);
+    await db.exec("reset role");
+    await db.query(
+      "update social_accounts set refresh_started_at=now()-interval '3 minutes' where organization_id=$1 and user_id=$2 and provider='x'",
+      [org, member],
+    );
+    await db.exec("set role service_role");
+    expect(
+      await scalar("select claim_connection_token($1,$2,'x')", [org, member]),
+    ).toEqual({ kind: "reconnect" });
+    await as(member);
+    await db.query("select disconnect_channel($1,'x')", [org]);
   });
 });

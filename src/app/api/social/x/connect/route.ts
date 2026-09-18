@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     client_id: config.clientId,
     redirect_uri: config.redirectUri,
     state,
-    scope: "tweet.read tweet.write users.read",
+    scope: "tweet.read tweet.write users.read offline.access",
     code_challenge: createHash("sha256").update(verifier).digest("base64url"),
     code_challenge_method: "S256",
   }).toString();

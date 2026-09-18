@@ -39,8 +39,16 @@ export async function GET(request: NextRequest) {
     const { data: eligible } = await db.rpc("can_write", { org: state.org });
     if (!eligible) throw new Error("Not eligible");
     const { profile, token } = await exchangeX(code, state.verifier);
-    const { error } = await serviceDatabase().rpc("store_x_account", {
+    const { error } = await serviceDatabase().rpc("store_channel_connection", {
       org: state.org,
+      channel_name: "x",
+      refresh_encrypted: token.refresh_token
+        ? encryptToken(
+            token.refresh_token,
+            config.encryptionKey,
+            `${state.org}:${user.id}:x:refresh`,
+          )
+        : null,
       person: user.id,
       provider_person: profile.id,
       person_name: "@" + profile.username,

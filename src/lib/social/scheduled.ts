@@ -1,7 +1,11 @@
 import "server-only";
 import { serviceDatabase } from "@/lib/supabase/server";
 import { linkedinConfig, sendLinkedIn } from "./linkedin";
-import { decryptToken } from "@/lib/security/tokens";
+import {
+  connectionToken,
+  recordConnectionCheck,
+  providerIssue,
+} from "./connection";
 import { z } from "zod";
 const claimSchema = z.object({
   id: z.uuid(),
@@ -28,25 +32,24 @@ export async function runScheduledPosts() {
     const draft = parsed.data;
     let success = false;
     try {
-      const { data: account } = await db
-        .from("social_accounts")
-        .select("*")
-        .eq("organization_id", draft.organization_id)
-        .eq("user_id", draft.user_id)
-        .eq("provider", "linkedin")
-        .single();
-      if (!account || new Date(account.expires_at).getTime() <= Date.now())
-        throw new Error("Reconnect");
-      const token = decryptToken(
-        account.token_encrypted,
-        config.encryptionKey,
-        `${draft.organization_id}:${draft.user_id}:linkedin`,
+      const account = await connectionToken(
+        draft.organization_id,
+        draft.user_id,
+        "linkedin",
       );
       const sent = await sendLinkedIn(
-        token,
-        account.provider_user_id,
+        account.token,
+        account.providerPerson,
         draft.body,
       );
+      if (!sent.ok)
+        await recordConnectionCheck(
+          draft.organization_id,
+          draft.user_id,
+          "linkedin",
+          account.encrypted,
+          providerIssue(sent.status),
+        );
       if (sent.ok) {
         const { error } = await db.rpc("complete_publish", {
           draft: draft.id,

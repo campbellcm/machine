@@ -41,8 +41,10 @@ export async function GET(request: NextRequest) {
     if (!eligible) throw new Error("Not eligible");
     const { profile, token } = await exchangeLinkedIn(code);
     const service = serviceDatabase();
-    const { error } = await service.rpc("store_social_account", {
+    const { error } = await service.rpc("store_channel_connection", {
       org: state.org,
+      channel_name: "linkedin",
+      refresh_encrypted: null,
       person: user.id,
       provider_person: profile.sub,
       person_name: profile.name,
@@ -58,7 +60,5 @@ export async function GET(request: NextRequest) {
   } catch {
     /* Never log OAuth codes, tokens or provider responses. */
   }
-  return NextResponse.redirect(
-    appUrl() + "/workspace/connections?notice=" + outcome,
-  );
+  return NextResponse.redirect(appUrl() + "/workspace/team?notice=" + outcome);
 }

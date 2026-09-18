@@ -141,9 +141,10 @@ export default function Setup() {
           provider charges.
         </p>
         <p>
-          This pilot requests user/profile and post permissions with short-lived
-          tokens. Users reconnect after expiry. Automatic X token refresh,
-          analytics sync, and scheduled X posting are not enabled.
+          Request tweet.read, tweet.write, users.read and offline.access. New
+          connections support encrypted automatic renewal. Existing users must
+          reconnect once to grant offline access. Revoked or interrupted renewal
+          requires reconnecting. Analytics sync and scheduled X posting are not enabled.
         </p>
         <a href="https://developer.x.com/">Open X developers ↗</a>
       </section>

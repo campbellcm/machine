@@ -6,7 +6,13 @@ import { z } from "zod";
 import { workspace, serviceDatabase } from "@/lib/supabase/server";
 import { linkedinConfig, sendLinkedIn } from "./linkedin";
 import { xConfig, sendX } from "./x";
-import { decryptToken } from "@/lib/security/tokens";
+import {
+  ConnectionError,
+  connectionToken,
+  providerIssue,
+  recordConnectionCheck,
+  verifyConnection,
+} from "./connection";
 export async function disconnectLinkedIn() {
   const { db, org } = await workspace();
   const { error } = await db.rpc("disconnect_channel", {
@@ -28,15 +34,17 @@ export async function publishLinkedIn(f: FormData) {
   const id = z.uuid().parse(f.get("id"));
   const revision = z.coerce.number().int().positive().parse(f.get("revision"));
   const service = serviceDatabase();
-  const { data: account } = await service
-    .from("social_accounts")
-    .select("*")
-    .eq("organization_id", org.id)
-    .eq("user_id", user.id)
-    .eq("provider", channel)
-    .single();
-  if (!account || new Date(account.expires_at).getTime() <= Date.now())
-    redirect("/workspace/drafts?notice=not-configured");
+  let account;
+  try {
+    account = await connectionToken(org.id, user.id, channel);
+  } catch (error) {
+    redirect(
+      "/workspace/drafts?notice=" +
+        (error instanceof ConnectionError
+          ? error.reason
+          : "connection-unavailable"),
+    );
+  }
   if (!(await allowRequest("publish", user.id, 30, 3600)))
     redirect("/workspace/drafts?notice=not-saved");
   const { data: claimed, error } = await db.rpc("claim_channel_publish", {
@@ -46,16 +54,12 @@ export async function publishLinkedIn(f: FormData) {
   });
   if (error || !claimed) redirect("/workspace/drafts?notice=not-saved");
   let outcome = "uncertain";
+  let rejected = false;
   try {
-    const token = decryptToken(
-      account.token_encrypted,
-      config.encryptionKey,
-      `${org.id}:${user.id}:${channel}`,
-    );
     const result =
       channel === "x"
-        ? await sendX(token, claimed)
-        : await sendLinkedIn(token, account.provider_user_id, claimed);
+        ? await sendX(account.token, claimed)
+        : await sendLinkedIn(account.token, account.providerPerson, claimed);
     if (result.ok) {
       const { error: saveError } = await service.rpc(
         channel === "x" ? "complete_x_publish" : "complete_publish",
@@ -66,11 +70,32 @@ export async function publishLinkedIn(f: FormData) {
       );
       if (!saveError) outcome = "published";
     }
+    if (!result.ok && result.status) {
+      const issue = providerIssue(result.status);
+      await recordConnectionCheck(
+        org.id,
+        user.id,
+        channel,
+        account.encrypted,
+        issue,
+      );
+      outcome = issue;
+      if ([400, 401, 403, 422, 429].includes(result.status)) {
+        const { data: released } = await service.rpc("reject_publish_attempt", {
+          draft: id,
+          expected_revision: revision,
+        });
+        if (released) {
+          rejected = true;
+          outcome = "rejected-" + issue;
+        }
+      }
+    }
     // Even failures stay locked if delivery cannot be established. No blind retry.
   } catch {
     /* Provider timeout may mean delivery succeeded. Keep claim locked. */
   }
-  if (outcome !== "published")
+  if (outcome !== "published" && !rejected)
     await service
       .from("drafts")
       .update({ status: "publish_uncertain" })
@@ -106,4 +131,19 @@ export async function disconnectChannel(f: FormData) {
   });
   revalidatePath("/workspace/team");
   redirect("/workspace/team?notice=" + (error ? "failed" : "disconnected"));
+}
+
+export async function checkConnection(f: FormData) {
+  const { user, org } = await workspace();
+  const channel = z.enum(["linkedin", "x"]).parse(f.get("channel"));
+  if (!(await allowRequest("connection-check", user.id, 6, 60)))
+    redirect("/workspace/team?notice=rate_limit");
+  let notice = "checked";
+  try {
+    notice = (await verifyConnection(org.id, user.id, channel)) || "checked";
+  } catch (error) {
+    notice = error instanceof ConnectionError ? error.reason : "unavailable";
+  }
+  revalidatePath("/workspace/team");
+  redirect("/workspace/team?notice=" + notice);
 }
