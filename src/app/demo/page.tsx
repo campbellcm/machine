@@ -1,3 +1,4 @@
+import { previousPeriod } from "@/lib/analytics/metrics";
 import { HomeDashboard } from "@/components/v1/home";
 import { dateRange, demoReport } from "@/lib/v1/report";
 export default async function DemoPage({
@@ -10,6 +11,10 @@ export default async function DemoPage({
   return (
     <HomeDashboard
       report={demoReport(range.start, range.end)}
+      previous={demoReport(
+        previousPeriod(range.start, range.end).start,
+        previousPeriod(range.start, range.end).end,
+      )}
       {...range}
       demo
       timezone="America/New_York"

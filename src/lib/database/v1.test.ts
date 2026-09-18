@@ -486,3 +486,136 @@ describe("Connection renewal and safe health", () => {
     await db.query("select disconnect_channel($1,'x')", [org]);
   });
 });
+
+describe("Private imports and opt-in participation", () => {
+  const batch = [
+    {
+      id: "445566",
+      author_id: "998877",
+      text: "Approved work insight",
+      created_at: "2026-09-18T12:00:00Z",
+      public_metrics: { impression_count: 100, like_count: 3 },
+    },
+  ];
+  let post: string;
+  it("requires opt-in and keeps unselected imports private from admins", async () => {
+    await db.exec("reset role;set role service_role");
+    await db.query(
+      "select store_channel_connection($1,$2,'x','998877','Member','access','refresh',now()+interval '2 hours')",
+      [org, member],
+    );
+    expect(
+      await scalar("select save_tracked_posts($1,$2,'x','998877',$3)", [
+        org,
+        member,
+        JSON.stringify(batch),
+      ]),
+    ).toBe(false);
+    await as(member);
+    await db.query("select set_post_tracking($1,'x',true)", [org]);
+    await db.exec("reset role;set role service_role");
+    expect(
+      await scalar("select save_tracked_posts($1,$2,'x','998877',$3)", [
+        org,
+        member,
+        JSON.stringify(batch),
+      ]),
+    ).toBe(true);
+    post = await scalar<string>(
+      "select id from tracked_posts where provider_post_id='445566'",
+    );
+    await as(owner);
+    expect((await db.query("select * from tracked_posts")).rows).toHaveLength(
+      0,
+    );
+    expect((await db.query("select * from post_snapshots")).rows).toHaveLength(
+      0,
+    );
+    await expect(
+      db.query("select select_work_post($1,true)", [post]),
+    ).rejects.toThrow(/Author required/);
+    await as(member);
+    await db.query("select select_work_post($1,true)", [post]);
+    await as(owner);
+    expect((await db.query("select * from tracked_posts")).rows).toHaveLength(
+      1,
+    );
+    expect((await db.query("select * from post_snapshots")).rows).toHaveLength(
+      1,
+    );
+    await as(outsider);
+    expect((await db.query("select * from tracked_posts")).rows).toHaveLength(
+      0,
+    );
+    expect((await db.query("select * from post_snapshots")).rows).toHaveLength(
+      0,
+    );
+  });
+  it("deduplicates imported publication counts against the complete stored draft history", async () => {
+    await as(member);
+    expect(
+      (
+        await db.query<{ posts: number }>(
+          "select * from imported_post_counts($1,'2026-09-01','2026-09-30')",
+          [org],
+        )
+      ).rows[0].posts,
+    ).toBe(1);
+    const id = await scalar<string>(
+      "select save_channel_draft($1,null,'I work at Acme. Tracking dedupe test',null,'x')",
+      [org],
+    );
+    await db.query("select transition_draft($1,1,'approve')", [id]);
+    await db.query("select claim_channel_publish($1,1,'x')", [id]);
+    await db.exec("reset role;set role service_role");
+    await db.query("select complete_x_publish($1,'445566')", [id]);
+    await as(member);
+    expect(
+      (
+        await db.query(
+          "select * from imported_post_counts($1,'2026-09-01','2026-09-30')",
+          [org],
+        )
+      ).rows,
+    ).toHaveLength(0);
+    await as(outsider);
+    await expect(
+      db.query(
+        "select * from imported_post_counts($1,'2026-09-01','2026-09-30')",
+        [org],
+      ),
+    ).rejects.toThrow(/Membership/);
+  });
+  it("rejects wrong-author data, duplicate post rows and sync after disconnect", async () => {
+    await db.exec("reset role;set role service_role");
+    await expect(
+      db.query("select save_tracked_posts($1,$2,'x','998877',$3)", [
+        org,
+        member,
+        JSON.stringify([{ ...batch[0], author_id: "other" }]),
+      ]),
+    ).rejects.toThrow(/Invalid post/);
+    await db.query("select save_tracked_posts($1,$2,'x','998877',$3)", [
+      org,
+      member,
+      JSON.stringify(batch),
+    ]);
+    expect(await scalar("select count(*)::int from tracked_posts")).toBe(1);
+    await as(member);
+    await db.query("select disconnect_channel($1,'x')", [org]);
+    await db.exec("reset role;set role service_role");
+    expect(
+      await scalar("select save_tracked_posts($1,$2,'x','998877',$3)", [
+        org,
+        member,
+        JSON.stringify(batch),
+      ]),
+    ).toBe(false);
+    await as(member);
+    await db.query("select select_work_post($1,false)", [post]);
+    await as(owner);
+    expect((await db.query("select * from post_snapshots")).rows).toHaveLength(
+      0,
+    );
+  });
+});
