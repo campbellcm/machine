@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M8 — refined AI studio and topic composer.
+Current milestone: M10 — reliable LinkedIn and X connections (first milestone of the September 18 roadmap).
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -290,3 +290,14 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 
 - Founder requested publishing the approved standalone marketing HTML through the existing GitHub and Netlify connections. Added the exact artifact as public/marketing.html and a /marketing rewrite. App routes remain unchanged; no separate repository, project, paid service, authentication change, or user data involved.
 - The page contains only illustrative people, rewards, and performance. Static structure and JavaScript syntax checks passed during authoring. Hosted preview and existing CI checks gate the release.
+
+
+## M10 — reliable social connections, September 18
+
+- Founder adopted the foundation-first roadmap and tab additions; recorded the full approved scope in PRD. This milestone implements connection reliability first, with a separately reviewed release before further work. Later tracking/reporting/delivery/tab work is not marked complete.
+- Additive migration 016 keeps encrypted refresh credentials in the existing service-only RLS table, serializes refresh attempts, rejects stale completions after reconnect/disconnect, and exposes a credential-free tenant-checked health projection.
+- X requests offline.access, rotates encrypted credentials on demand and in bounded maintenance, and requires reconnect after ambiguous or revoked refresh. Existing X users must reconnect once. LinkedIn retains reconnect rather than assuming restricted partner refresh access.
+- Team adds own-account checks, profile verification timestamps, renewal and actionable failure states. Publishing uses current connection credentials; rejected or ambiguous post attempts remain locked against duplicate publication.
+- Separate Netlify connection maintenance: at most one renewal per five-minute invocation, with 15-second provider timeout. On-demand renewal handles accounts not reached by the bounded pilot sweep. No external API usage, paid service, credentials, or live provider changes performed.
+- Official docs checked: https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code and https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens . Profile verification is explicitly distinct from publishing/analytics access.
+- Validation: 107 unit/database/API tests pass; typecheck and lint pass. Independent review cleared after fixing provider-profile ownership and a retry race. Definitive rejection recovery applies to manual API publication; scheduled publication retains conservative locking. Hosted build/browser checks pending. Real-account verification remains blocked by Supabase/social provider setup. Automatic tracking, analytics, scheduled X publication, external draft delivery and the remaining adopted features are still future milestones.

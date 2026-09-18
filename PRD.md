@@ -105,3 +105,19 @@ The founder’s latest design replaces the default AI control panel with “Let 
 The founder’s latest request supersedes the large daily-quantity setup as the primary AI screen. Lead with “Let AI create your content.” and a spacious ChatGPT-style composer: “Give me a topic and I’ll draft a post for you”. Use the existing company OpenAI API connection, not personal ChatGPT sign-in. The secondary section offers three daily drafts by default, email/Slack/iMessage preferences, and “Make my content”. Keep quantity and role preferences in progressive disclosure. Use the site's neutral surfaces, blue accents, system typography, light/dark themes, and compact contextual links.
 
 Topic requests use a selected approved context, existing consent/limits/queue/guardrails, and author review. No anonymous live AI calls. Samples are explicitly prepared examples. External delivery remains unconnected and must be labeled honestly; choosing a channel saves a preference only.
+
+## September 18 — foundation and growth roadmap adopted
+
+The founder approved the following sequence. Keep four primary tabs and LinkedIn/X only. These are requirements, not claims of completed integration.
+
+1. **Connection reliability:** encrypted X renewal with offline access; LinkedIn reconnect when required; safe connection health, explicit checks, actionable failure states and supported author-approved publication. Profile access is not evidence of analytics or publishing permission. Verify real accounts after provider setup.
+2. **Automatic tracking:** ingest eligible posts from connected employee accounts, including outside posts; employee-selected work participation, supported API access only.
+3. **Trustworthy reporting:** sync timestamps, coverage/unavailable states, lifetime snapshots distinguished from period activity, comparable prior periods, post-detail drawer and evidence-based breakout alerts.
+4. **Author publishing:** review → schedule → publish, channel-specific versions with separate approval, simple calendar within AI.
+5. **Delivery:** email first, Slack second, links to private review/editing; weekly team digest. iMessage deferred until a supported approach exists.
+6. **Attribution:** tracked clicks → form conversions → eventually selected CRM outcomes; clearly distinguish attributed conversions from influence.
+7. **Team:** published-performance profiles, connection/voice/first-post onboarding checklist, participation support overview without employee productivity scoring.
+8. **Rewards:** consistency, improvement, first milestones and team goals; personal eligibility/progress/time remaining; challenge templates; confirmed results, tie resolution, winner notifications and fulfillment tracking. No payments.
+9. **AI:** approved company campaign briefs, distinct role/channel drafts, successful team-post examples, evidence-backed performance suggestions, approved Fathom and selected Slack source ingestion with permissions and confidentiality review.
+
+Provider setup, product access, and real-account verification are release dependencies. No scraping, purchased access, or fabricated metrics as fallbacks. Retain supported historical metric snapshots. Existing setup experience must explain unmet dependencies. Build and review milestones in this order; record exact verified coverage in PROGRESS.md.

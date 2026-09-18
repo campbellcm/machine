@@ -22,7 +22,7 @@ it("sends the exact approved X text and accepts only a valid returned ID", async
       status: 201,
     }),
   );
-  expect(await sendX("test-token", "text")).toEqual({ ok: false });
+  expect(await sendX("test-token", "text")).toEqual({ ok: false, status: 502 });
 });
 it("does not retry ambiguous X delivery", async () => {
   const request = vi.fn().mockRejectedValue(new Error("timeout"));

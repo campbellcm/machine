@@ -42,6 +42,7 @@ export async function exchangeX(code: string, verifier: string) {
     .object({
       access_token: z.string().min(1),
       expires_in: z.number().positive(),
+      refresh_token: z.string().min(1).optional(),
     })
     .parse(await response.json());
   const profileResponse = await fetch("https://api.x.com/2/users/me", {
@@ -72,11 +73,41 @@ export async function sendX(token: string, body: string) {
     signal: AbortSignal.timeout(15000),
     cache: "no-store",
   });
-  if (!response.ok) return { ok: false as const };
+  if (!response.ok) return { ok: false as const, status: response.status };
   const parsed = z
     .object({ data: z.object({ id: z.string().regex(/^\d+$/) }) })
     .safeParse(await response.json());
   return parsed.success
     ? { ok: true as const, id: parsed.data.data.id }
-    : { ok: false as const };
+    : { ok: false as const, status: 502 };
+}
+
+export async function refreshX(refreshToken: string) {
+  const config = xConfig();
+  if (!config) throw new Error("Setup required");
+  const response = await fetch("https://api.x.com/2/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Basic " +
+        Buffer.from(config.clientId + ":" + config.clientSecret).toString(
+          "base64",
+        ),
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+    signal: AbortSignal.timeout(15000),
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Reconnect X");
+  return z
+    .object({
+      access_token: z.string().min(1),
+      expires_in: z.number().positive(),
+      refresh_token: z.string().min(1),
+    })
+    .parse(await response.json());
 }

@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { linkedinConfig } from "@/lib/social/linkedin";
 import { xConfig } from "@/lib/social/x";
-import { disconnectChannel } from "@/lib/social/actions";
+import { connectionLabel, connectionNotice } from "@/lib/social/health";
+import { disconnectChannel, checkConnection } from "@/lib/social/actions";
 import { workspace } from "@/lib/supabase/server";
 import { appUrl } from "@/lib/supabase/config";
 import { inviteMember, changeMember } from "../actions";
@@ -19,6 +20,17 @@ export default async function Team({
     "team_connections",
     { org: org.id },
   );
+  const { data: health, error: healthError } = await db.rpc(
+    "team_connection_health",
+    { org: org.id },
+  );
+  const accountHealth = (health || []) as {
+    user_id: string;
+    provider: string;
+    state: string;
+    last_verified_at: string | null;
+    renewal_enabled: boolean;
+  }[];
   const profiles = (connections || []) as {
     user_id: string;
     display_name: string;
@@ -34,7 +46,12 @@ export default async function Team({
     .eq("organization_id", org.id)
     .is("removed_at", null);
   const { data: photos } = await db.rpc("team_photos", { org: org.id });
-  const photoByUser = new Map<string, string>((photos || []).map((p: { user_id: string; photo_url: string }) => [p.user_id, p.photo_url]));
+  const photoByUser = new Map<string, string>(
+    (photos || []).map((p: { user_id: string; photo_url: string }) => [
+      p.user_id,
+      p.photo_url,
+    ]),
+  );
   const token = (await cookies()).get("crewcast_invite")?.value;
   return (
     <div className="v1">
@@ -61,10 +78,10 @@ export default async function Team({
                 ? "Connection could not be completed. Try again."
                 : notice === "setup"
                   ? "Complete provider setup and opt in first."
-                  : "Review the team update below."}
+                  : connectionNotice(notice)}
         </p>
       )}
-      {connectionError && (
+      {(connectionError || healthError) && (
         <p role="alert">
           Connection status is unavailable. Apply the latest database
           migrations.
@@ -73,23 +90,62 @@ export default async function Team({
       <div className="team-list" role="list" aria-label="Team members">
         {profiles.map((p) => (
           <section className="team-row" role="listitem" key={p.user_id}>
-            <div className="team-person"><TeamAvatar name={p.display_name || "New teammate"} src={photoByUser.get(p.user_id)} /><div><h3>{p.display_name || "New teammate"}</h3><p>{p.job_title}</p></div></div>
+            <div className="team-person">
+              <TeamAvatar
+                name={p.display_name || "New teammate"}
+                src={photoByUser.get(p.user_id)}
+              />
+              <div>
+                <h3>{p.display_name || "New teammate"}</h3>
+                <p>{p.job_title}</p>
+              </div>
+            </div>
             {(["linkedin", "x"] as const).map((channel) => {
               const name = channel === "x" ? p.x_name : p.linkedin_name;
               const expires =
                 channel === "x" ? p.x_expires : p.linkedin_expires;
-              const expired = !!expires && Date.parse(expires) <= Date.now();
+              const health = accountHealth.find(
+                (a) => a.user_id === p.user_id && a.provider === channel,
+              );
+              const expired =
+                health?.state === "reconnect" ||
+                (!health && !!expires && Date.parse(expires) <= Date.now());
+              const state = healthError
+                ? "unknown"
+                : health?.state || (expired ? "reconnect" : "unknown");
               const ready = channel === "x" ? !!xConfig() : !!linkedinConfig();
               return (
                 <div className="team-channel" key={channel}>
                   <h4>{channel === "x" ? "X" : "LinkedIn"}</h4>
                   <small>
                     {name
-                      ? `${name} · ${expired ? "Reconnect required" : "Connected"}`
+                      ? `${name} · ${connectionLabel(state)}`
                       : "Not connected"}
                   </small>
+                  {name && (
+                    <small>
+                      {health?.last_verified_at
+                        ? `Profile verified ${new Date(health.last_verified_at).toLocaleString("en-US", { timeZone: org.timezone })} (${org.timezone})`
+                        : "Profile not checked yet"}
+                    </small>
+                  )}
+                  {name && channel === "x" && (
+                    <small>
+                      {health?.renewal_enabled
+                        ? "Automatic renewal enabled"
+                        : "Reconnect to enable automatic renewal"}
+                    </small>
+                  )}
                   {p.user_id === user.id && (
                     <>
+                      {name && (
+                        <form action={checkConnection}>
+                          <input name="channel" type="hidden" value={channel} />
+                          <button className="live-button secondary">
+                            Check connection
+                          </button>
+                        </form>
+                      )}
                       {name && (
                         <form action={disconnectChannel}>
                           <input name="channel" type="hidden" value={channel} />
@@ -98,14 +154,18 @@ export default async function Team({
                           </button>
                         </form>
                       )}
-                      {(!name || expired) &&
+                      {(!name ||
+                        expired ||
+                        (channel === "x" && !health?.renewal_enabled) ||
+                        health?.state === "permissions") &&
                         (ready && member.opted_in_at ? (
                           <form
                             action={`/api/social/${channel}/connect`}
                             method="post"
                           >
                             <button className="live-button">
-                              Connect {channel === "x" ? "X" : "LinkedIn"}
+                              {name ? "Reconnect" : "Connect"}{" "}
+                              {channel === "x" ? "X" : "LinkedIn"}
                             </button>
                           </form>
                         ) : (
@@ -130,9 +190,10 @@ export default async function Team({
         ))}
       </div>
       <p className="v1-note">
-        X uses short-lived authorization in this pilot. Reconnect when it
-        expires; automatic refresh and scheduled X publishing are not enabled
-        yet.
+        Connection checks verify profile access, not analytics coverage or
+        publishing permissions. X renews eligible authorizations automatically.
+        LinkedIn asks you to reconnect when authorization expires. Scheduled X
+        publishing and analytics sync are not enabled yet.
       </p>
       {admin && (
         <details className="v1-card">
