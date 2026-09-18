@@ -1,4 +1,5 @@
 "use client";
+import { PublishControls, PublishingCalendar } from "./publish-controls";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, FileText, Pause, ShieldCheck } from "lucide-react";
@@ -524,24 +525,15 @@ export function ContentEngine({
             />
           )}
           {tab === "Scheduled" && (
-            <div className={styles.empty}>
-              <h2>Your publishing stays in your hands.</h2>
-              <p>
-                For these source-backed posts, approve the text, then copy or
-                export it to your social account. Automatic publishing and
-                scheduling are not enabled here.
-              </p>
-              <button onClick={() => setTab("Drafts")}>
-                Review your drafts
-              </button>
-            </div>
+            <PublishingCalendar drafts={current.drafts} />
           )}
           {tab === "Published" && (
             <>
               <h2>Your published posts</h2>
               <p>
-                Manually recorded posts and results. These numbers are
-                self-reported, not synced or verified attribution.
+                Published and manually recorded posts. Metrics entered here are
+                self-reported; Home shows supported synced observations
+                separately.
               </p>
               {current.drafts
                 .filter((d) => d.is_owner && d.state === "published")
@@ -916,6 +908,9 @@ function DraftCard({
     [reason, setReason] = useState(reasons[0]),
     [instruction, setInstruction] = useState(""),
     [copyState, setCopyState] = useState("");
+  const deliveryLocked = ["publishing", "publish_uncertain"].includes(
+    d.publish_status || "",
+  );
   const account = data.connections.find((c) => c.channel === d.channel);
   const args = { id: d.id, revision: d.revision };
   async function exportPost(download = false) {
@@ -1032,144 +1027,148 @@ function DraftCard({
           </ul>
         )}
       </details>
-      {d.state !== "published" && d.state !== "archived" && !d.invalidated && (
-        <>
-          {d.state === "approved" ? (
-            <div className={styles.actions}>
-              <button
-                className={styles.primary}
-                disabled={editing || busy}
-                onClick={() => exportPost()}
-              >
-                Copy approved post
-              </button>
-              <button
-                disabled={editing || busy}
-                onClick={() => exportPost(true)}
-              >
-                Export
-              </button>
-              <button onClick={() => setEditing(true)}>Edit</button>
-            </div>
-          ) : (
-            <div className={styles.actions}>
-              <button
-                className={styles.primary}
-                disabled={busy || editing || d.state === "ready_for_review"}
-                onClick={() => setConfirm(!confirm)}
-              >
-                Approve post
-              </button>
-              <button onClick={() => setEditing(true)}>Edit</button>
-              <button onClick={() => setSkipping(!skipping)}>Skip</button>
-            </div>
-          )}
-          {confirm && (
-            <div className={styles.confirm}>
-              <h3>Approve for {d.channel === "x" ? "X" : "LinkedIn"}</h3>
-              <p>
-                This approves the saved text for copy/export. It will not
-                publish or schedule a post. A company review may still be
-                required.
-              </p>
-              {!!d.details.riskFlags?.length && (
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={risk}
-                    onChange={(e) => setRisk(e.target.checked)}
-                  />
-                  I checked the flagged claims against approved evidence.
-                </label>
-              )}
-              <button
-                className={styles.primary}
-                disabled={busy || (!!d.details.riskFlags?.length && !risk)}
-                onClick={async () => {
-                  if (
-                    await command("approve", {
-                      ...args,
-                      confirmed: true,
-                      risk_confirmed: risk,
-                    })
-                  )
-                    setConfirm(false);
-                }}
-              >
-                Confirm approval
-              </button>
-              <button onClick={() => setConfirm(false)}>Cancel</button>
-            </div>
-          )}
-          {skipping && (
-            <div className={styles.confirm}>
-              <label>
-                Why skip this post?
-                <select
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
+      {!demo && <PublishControls draft={d} disabled={editing || busy} />}
+      {d.state !== "published" &&
+        d.state !== "archived" &&
+        !d.invalidated &&
+        !deliveryLocked && (
+          <>
+            {d.state === "approved" ? (
+              <div className={styles.actions}>
+                <button
+                  className={styles.primary}
+                  disabled={editing || busy}
+                  onClick={() => exportPost()}
                 >
-                  {reasons.map((r) => (
-                    <option key={r}>{r}</option>
-                  ))}
+                  Copy approved post
+                </button>
+                <button
+                  disabled={editing || busy}
+                  onClick={() => exportPost(true)}
+                >
+                  Export
+                </button>
+                <button onClick={() => setEditing(true)}>Edit</button>
+              </div>
+            ) : (
+              <div className={styles.actions}>
+                <button
+                  className={styles.primary}
+                  disabled={busy || editing || d.state === "ready_for_review"}
+                  onClick={() => setConfirm(!confirm)}
+                >
+                  Approve post
+                </button>
+                <button onClick={() => setEditing(true)}>Edit</button>
+                <button onClick={() => setSkipping(!skipping)}>Skip</button>
+              </div>
+            )}
+            {confirm && (
+              <div className={styles.confirm}>
+                <h3>Approve for {d.channel === "x" ? "X" : "LinkedIn"}</h3>
+                <p>
+                  This approves the saved text. Publishing or scheduling
+                  requires a separate action from you. A company review may
+                  still be required.
+                </p>
+                {!!d.details.riskFlags?.length && (
+                  <label className={styles.checkbox}>
+                    <input
+                      type="checkbox"
+                      checked={risk}
+                      onChange={(e) => setRisk(e.target.checked)}
+                    />
+                    I checked the flagged claims against approved evidence.
+                  </label>
+                )}
+                <button
+                  className={styles.primary}
+                  disabled={busy || (!!d.details.riskFlags?.length && !risk)}
+                  onClick={async () => {
+                    if (
+                      await command("approve", {
+                        ...args,
+                        confirmed: true,
+                        risk_confirmed: risk,
+                      })
+                    )
+                      setConfirm(false);
+                  }}
+                >
+                  Confirm approval
+                </button>
+                <button onClick={() => setConfirm(false)}>Cancel</button>
+              </div>
+            )}
+            {skipping && (
+              <div className={styles.confirm}>
+                <label>
+                  Why skip this post?
+                  <select
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                  >
+                    {reasons.map((r) => (
+                      <option key={r}>{r}</option>
+                    ))}
+                  </select>
+                </label>
+                <button onClick={() => command("reject", { ...args, reason })}>
+                  Skip with feedback
+                </button>
+              </div>
+            )}
+            <details className={styles.why}>
+              <summary>Try another version</summary>
+              <label>
+                Tell us what to change
+                <select
+                  value={instruction}
+                  onChange={(e) => setInstruction(e.target.value)}
+                >
+                  <option value="">Same idea, different version</option>
+                  <option>Make it shorter</option>
+                  <option>Make it more conversational</option>
+                  <option>Make it less promotional</option>
+                  <option>Try a different angle</option>
                 </select>
               </label>
-              <button onClick={() => command("reject", { ...args, reason })}>
-                Skip with feedback
-              </button>
-            </div>
-          )}
-          <details className={styles.why}>
-            <summary>Try another version</summary>
-            <label>
-              Tell us what to change
-              <select
-                value={instruction}
-                onChange={(e) => setInstruction(e.target.value)}
+              <label>
+                Additional direction
+                <input
+                  value={instruction}
+                  onChange={(e) => setInstruction(e.target.value)}
+                  maxLength={500}
+                />
+              </label>
+              <button
+                disabled={busy || !data.ready || !d.opportunity_id}
+                onClick={() =>
+                  command("generate", {
+                    id: d.opportunity_id,
+                    key: crypto.randomUUID(),
+                    instruction,
+                  })
+                }
               >
-                <option value="">Same idea, different version</option>
-                <option>Make it shorter</option>
-                <option>Make it more conversational</option>
-                <option>Make it less promotional</option>
-                <option>Try a different angle</option>
-              </select>
-            </label>
-            <label>
-              Additional direction
-              <input
-                value={instruction}
-                onChange={(e) => setInstruction(e.target.value)}
-                maxLength={500}
-              />
-            </label>
-            <button
-              disabled={busy || !data.ready || !d.opportunity_id}
-              onClick={() =>
-                command("generate", {
-                  id: d.opportunity_id,
-                  key: crypto.randomUUID(),
-                  instruction,
-                })
-              }
-            >
-              Prepare another option
-            </button>
-            <p>
-              Your previous version stays available.
-              {demo ? " This creates another sample, not an AI rewrite." : ""}
-            </p>
-          </details>
-        </>
-      )}
+                Prepare another option
+              </button>
+              <p>
+                Your previous version stays available.
+                {demo ? " This creates another sample, not an AI rewrite." : ""}
+              </p>
+            </details>
+          </>
+        )}
       <div className={styles.actions}>
         <button onClick={() => command("more", args)}>More like this</button>
         <button onClick={() => command("less", args)}>Less like this</button>
-        {d.state !== "published" && (
+        {d.state !== "published" && !deliveryLocked && (
           <button onClick={() => command("archive", args)}>Archive</button>
         )}
       </div>
       {copyState && <p role="status">{copyState}</p>}
-      {d.state === "approved" && (
+      {d.state === "approved" && !deliveryLocked && (
         <details className={styles.why}>
           <summary>Already posted it?</summary>
           <form
@@ -1211,7 +1210,10 @@ function DraftCard({
             {d.published_at
               ? new Date(d.published_at).toLocaleDateString()
               : ""}{" "}
-            · Self-reported publication
+            ·{" "}
+            {d.publish_method === "api"
+              ? "Confirmed by social network"
+              : "Self-reported publication"}
           </p>
           {d.url &&
             /^https:\/\/(www\.)?(linkedin\.com|x\.com)\//.test(d.url) && (

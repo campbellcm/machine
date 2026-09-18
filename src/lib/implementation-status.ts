@@ -15,7 +15,7 @@ export const implementationStatus = [
     area: "LinkedIn & X",
     status: "Implemented · real-account verification needed",
     detail:
-      "OAuth, encrypted tokens, manual/API text posting and author approvals. LinkedIn scheduling supported. X supports encrypted automatic renewal with offline access, account checks and reconnect guidance. Scheduled X posts and analytics are not enabled.",
+      "OAuth, encrypted tokens, manual/API text posting and author approvals. LinkedIn scheduling supported. X supports encrypted automatic renewal with offline access, account checks and reconnect guidance. Author-approved LinkedIn/X schedules are supported. Optional X import and snapshots are available; LinkedIn analytics still requires approved access.",
   },
   {
     area: "Rewards",

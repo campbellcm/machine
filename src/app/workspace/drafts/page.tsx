@@ -242,7 +242,7 @@ export default async function Drafts({
                   </button>
                 </form>
               )}
-              {d.channel !== "x" && (
+              {(d.channel === "x" || d.channel === "linkedin") && (
                 <form action={scheduleLinkedIn}>
                   <input type="hidden" name="id" value={d.id} />
                   <input

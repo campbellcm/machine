@@ -619,3 +619,50 @@ describe("Private imports and opt-in participation", () => {
     );
   });
 });
+
+describe("Author-controlled X schedules", () => {
+  it("requires the correct channel connection and preserves approval until the due claim", async () => {
+    await as(member);
+    const id = await scalar<string>(
+      "select save_channel_draft($1,null,'I work at Acme. Scheduled X post',null,'x')",
+      [org],
+    );
+    await db.query("select transition_draft($1,1,'approve')", [id]);
+    await expect(
+      db.query("select schedule_post($1,1,now()+interval '1 hour')", [id]),
+    ).rejects.toThrow(/Reconnect/);
+    await db.exec("reset role;set role service_role");
+    await db.query(
+      "select store_channel_connection($1,$2,'x','998877','Member','access','refresh',now()+interval '2 hours')",
+      [org, member],
+    );
+    await as(owner);
+    await expect(
+      db.query("select schedule_post($1,1,now()+interval '1 hour')", [id]),
+    ).rejects.toThrow(/author approval/);
+    await as(member);
+    await db.query("select schedule_post($1,1,now()+interval '3 hours')", [id]);
+    expect(await scalar("select status from drafts where id=$1", [id])).toBe(
+      "approved",
+    );
+    await db.exec("reset role");
+    await db.query(
+      "update publish_jobs set run_at=now()-interval '1 minute' where draft_id=$1",
+      [id],
+    );
+    const job = await scalar<string>(
+      "select id from publish_jobs where draft_id=$1",
+      [id],
+    );
+    await db.exec("set role service_role");
+    expect(
+      await scalar("select claim_scheduled_post($1)", [job]),
+    ).toMatchObject({
+      channel: "x",
+      revision: 1,
+      body: "I work at Acme. Scheduled X post",
+    });
+    expect(await scalar("select claim_scheduled_post($1)", [job])).toBeNull();
+    await db.query("select complete_x_publish($1,'787878')", [id]);
+  });
+});
