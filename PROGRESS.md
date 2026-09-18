@@ -284,3 +284,9 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Demo response is a prepared example explicitly labeled as not generated for the topic. No public AI endpoint, personal ChatGPT account sign-in, new provider/model, migration, credential, or external delivery transport was added. API setup and real-account verification remain required.
 - Current official OpenAI structured-output documentation checked: https://developers.openai.com/api/docs/guides/structured-outputs . Existing Responses parse integration and configured model retained.
 - Validation: 96 unit/database/API tests passed; hosted lint, typecheck, production build, and all 22 desktop/mobile browser tests passed, including accessibility checks. Independent review found two UI state edges (newly loaded ideas and legacy WhatsApp preferences); both fixed and re-reviewed. Hosted preview inspected in light/dark, chat response and daily setup exercised, mobile checked at 390px without overflow. Local production build was blocked by sandbox port binding; the same build passed on Netlify/GitHub. No real OpenAI call or external delivery was performed.
+
+
+## Marketing page deployment — September 18, 2026
+
+- Founder requested publishing the approved standalone marketing HTML through the existing GitHub and Netlify connections. Added the exact artifact as public/marketing.html and a /marketing rewrite. App routes remain unchanged; no separate repository, project, paid service, authentication change, or user data involved.
+- The page contains only illustrative people, rewards, and performance. Static structure and JavaScript syntax checks passed during authoring. Hosted preview and existing CI checks gate the release.
