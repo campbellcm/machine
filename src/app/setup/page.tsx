@@ -144,7 +144,7 @@ export default function Setup() {
           Request tweet.read, tweet.write, users.read and offline.access. New
           connections support encrypted automatic renewal. Existing users must
           reconnect once to grant offline access. Revoked or interrupted renewal
-          requires reconnecting. Optional X post tracking imports recent original posts with public metric snapshots after employee opt-in. LinkedIn analytics and scheduled X posting are not enabled.
+          requires reconnecting. Optional X post tracking imports recent original posts with public metric snapshots after employee opt-in. LinkedIn analytics needs additional approved API access. Author-approved X scheduling is supported with offline access and a working maintenance job.
         </p>
         <a href="https://developer.x.com/">Open X developers ↗</a>
       </section>

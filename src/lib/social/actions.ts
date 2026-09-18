@@ -24,13 +24,15 @@ export async function disconnectLinkedIn() {
   );
 }
 export async function publishLinkedIn(f: FormData) {
+  const returnTo =
+    f.get("return_to") === "ai" ? "/workspace/ai" : "/workspace/drafts";
   const { db, user, org } = await workspace();
   const channel = z
     .enum(["linkedin", "x"])
     .parse(f.get("channel") || "linkedin");
   const config = channel === "x" ? xConfig() : linkedinConfig();
   if (!config || f.get("confirmed") !== "on")
-    redirect("/workspace/drafts?notice=not-configured");
+    redirect(returnTo + "?notice=not-configured");
   const id = z.uuid().parse(f.get("id"));
   const revision = z.coerce.number().int().positive().parse(f.get("revision"));
   const service = serviceDatabase();
@@ -39,20 +41,21 @@ export async function publishLinkedIn(f: FormData) {
     account = await connectionToken(org.id, user.id, channel);
   } catch (error) {
     redirect(
-      "/workspace/drafts?notice=" +
+      returnTo +
+        "?notice=" +
         (error instanceof ConnectionError
           ? error.reason
           : "connection-unavailable"),
     );
   }
   if (!(await allowRequest("publish", user.id, 30, 3600)))
-    redirect("/workspace/drafts?notice=not-saved");
+    redirect(returnTo + "?notice=not-saved");
   const { data: claimed, error } = await db.rpc("claim_channel_publish", {
     target_channel: channel,
     draft: id,
     expected_revision: revision,
   });
-  if (error || !claimed) redirect("/workspace/drafts?notice=not-saved");
+  if (error || !claimed) redirect(returnTo + "?notice=not-saved");
   let outcome = "uncertain";
   let rejected = false;
   try {
@@ -102,7 +105,7 @@ export async function publishLinkedIn(f: FormData) {
       .eq("id", id)
       .eq("status", "publishing");
   revalidatePath("/workspace", "layout");
-  redirect("/workspace/drafts?notice=" + outcome);
+  redirect(returnTo + "?notice=" + outcome);
 }
 
 export async function scheduleLinkedIn(f: FormData) {
@@ -113,13 +116,17 @@ export async function scheduleLinkedIn(f: FormData) {
     publish_at: z.iso.datetime({ offset: true }).parse(f.get("publish_at")),
   });
   revalidatePath("/workspace/drafts");
-  redirect("/workspace/drafts?notice=" + (error ? "not-saved" : "saved"));
+  redirect(
+    (f.get("return_to") === "ai" ? "/workspace/ai" : "/workspace/drafts") +
+      "?notice=" +
+      (error ? "not-saved" : "saved"),
+  );
 }
 export async function cancelScheduled(f: FormData) {
   const { db } = await workspace();
   await db.rpc("cancel_scheduled_post", { draft: z.uuid().parse(f.get("id")) });
   revalidatePath("/workspace/drafts");
-  redirect("/workspace/drafts");
+  redirect(f.get("return_to") === "ai" ? "/workspace/ai" : "/workspace/drafts");
 }
 
 export async function disconnectChannel(f: FormData) {

@@ -28,6 +28,10 @@ export type EngineDraft = {
   channel: "linkedin" | "x";
   revision: number;
   state: string;
+  publish_status?: string;
+  publish_method?: string;
+  scheduled_at?: string;
+  schedule_status?: string;
   invalidated: boolean;
   opportunity_id: string | null;
   job_id?: string;

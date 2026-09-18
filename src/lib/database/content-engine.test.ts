@@ -220,6 +220,42 @@ describe("Content engine permissions and workflow", () => {
     expect(
       (await command("export", { id: draft, revision: 1 })).body,
     ).toContain("I work at Acme.");
+    // API publication uses the same approval and evidence guard.
+    await db.exec("begin");
+    await db.query("select claim_channel_publish($1,1,'linkedin')", [draft]);
+    await db.exec("savepoint locked");
+    for (const operation of ["reject", "archive"]) {
+      await expect(
+        command(operation, { id: draft, revision: 1 }),
+      ).rejects.toThrow(/Delivery lock/);
+      await db.exec("rollback to savepoint locked");
+    }
+    await service();
+    await db.query("update drafts set status='publish_uncertain' where id=$1", [
+      draft,
+    ]);
+    await as(member);
+    await db.exec("savepoint uncertain");
+    await expect(command("reject", { id: draft, revision: 1 })).rejects.toThrow(
+      /Delivery lock/,
+    );
+    await db.exec("rollback to savepoint uncertain");
+    await service();
+    await db.query("update drafts set status='publishing' where id=$1", [
+      draft,
+    ]);
+    await db.exec("savepoint source_delete");
+    await db.query("delete from ce_sources where id=$1", [source]);
+    expect(await value("select status from drafts where id=$1", [draft])).toBe(
+      "publishing",
+    );
+    await db.exec("rollback to savepoint source_delete");
+    await db.query("select complete_publish($1,'urn:li:share:9988')", [draft]);
+    expect(
+      await value("select state from ce_draft_meta where draft_id=$1", [draft]),
+    ).toBe("published");
+    await db.exec("rollback");
+    await as(member);
     await command("edit", {
       id: draft,
       revision: 1,

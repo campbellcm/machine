@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M11 — selected post tracking and honest reporting.
+Current milestone: M12 — author-controlled AI publishing and scheduling.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -314,3 +314,15 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Home adds post-detail dialogs with lifetime impressions, timestamped snapshots and explicitly partial observed growth, plus equal-window comparisons for available report metrics. Newest 180 snapshots per post are loaded; historical snapshots remain in storage. Company impression totals remain unavailable until cross-network coverage is trustworthy.
 - Imported selected posts are deduplicated against matching X URLs in Home. Rewards still score legacy verified publications; imported-post scoring is not yet enabled. No unsupported analytics or business attribution is inferred.
 - Official X timeline and metrics docs checked. 114 unit/database/API tests, typecheck and lint pass. Independent review cleared after separating authoritative counts from capped feed queries, paginating own imports, and deferring scheduled renewal to its separate worker. Post details include safe lifetime tracked-link/campaign/lead aggregates. Hosted build/browser checks pending; real-account calls not performed.
+
+
+## M11 release
+
+- PR #10 merged at 758176ff486cf16c5498f5e25182d2cca9a7cbd9 after review, 114 tests, full CI and preview checks passed. Hosted post-detail dialog inspected; no real provider sync performed.
+
+## M12 — author publishing and scheduling
+
+- Enables the existing API publisher for exact author-approved content-engine drafts, retaining current evidence/consent checks and revoking approval on edit. Manual legacy publication cannot bypass the engine path.
+- Adds Publish now / Schedule controls after approval and a date-ordered calendar within AI. Device timezone is shown, and the exact UTC instant is displayed before scheduling. X and LinkedIn use the existing 15-minute maintenance cadence; delayed queues are disclosed.
+- Schedule eligibility checks the selected channel, not any account. X can schedule beyond short access-token lifetime with refresh access. The scheduled worker avoids renewal within its posting deadline; accounts needing renewal fail visibly for author action. Missing connections fail before a publish claim; definitive provider rejection releases approval safely; ambiguous delivery remains locked.
+- 116 unit/database/API tests, typecheck and lint pass. Independent review cleared after preserving delivery locks through reject/archive/source invalidation and matching worker updates to the captured schedule revision/time. Hosted checks pending. Live Supabase/OAuth/publishing verification still requires provider setup; no real post has been sent.

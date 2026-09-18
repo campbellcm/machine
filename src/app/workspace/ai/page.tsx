@@ -1,3 +1,4 @@
+import { connectionNotice } from "@/lib/social/health";
 import { workspace } from "@/lib/supabase/server";
 import { engineReady } from "@/lib/content-engine/service";
 import {
@@ -7,7 +8,12 @@ import {
 } from "@/lib/content-engine/domain";
 import { ContentEngine } from "@/components/content-engine/content-engine";
 import type { EngineData, EngineDraft } from "@/lib/content-engine/types";
-export default async function AI() {
+export default async function AI({
+  searchParams,
+}: {
+  searchParams: Promise<{ notice?: string }>;
+}) {
+  const { notice } = await searchParams;
   const { db, org, user, member } = await workspace();
   const admin = ["owner", "admin"].includes(member.role);
   const [
@@ -83,10 +89,18 @@ export default async function AI() {
   const { data: drafts } = ids.length
     ? await db
         .from("drafts")
-        .select("id,user_id,body,channel,revision,published_at,linkedin_url")
+        .select(
+          "id,user_id,body,channel,revision,published_at,linkedin_url,status,publish_method",
+        )
         .eq("organization_id", org.id)
         .in("id", ids)
     : { data: [] };
+  const { data: publicationJobs } = await db
+    .from("publish_jobs")
+    .select("draft_id,run_at,status")
+    .eq("organization_id", org.id)
+    .eq("user_id", user.id)
+    .in("status", ["pending", "running", "failed"]);
   const c = connections.data?.find(
     (p: { user_id: string }) => p.user_id === user.id,
   );
@@ -124,6 +138,10 @@ export default async function AI() {
         is_owner: d.user_id === user.id,
         id: d.id,
         url: d.linkedin_url,
+        publish_status: d.status,
+        scheduled_at: publicationJobs?.find((j) => j.draft_id === d.id)?.run_at,
+        schedule_status: publicationJobs?.find((j) => j.draft_id === d.id)
+          ?.status,
         versions: (versions.data || []).filter((v) => v.draft_id === d.id),
       } as EngineDraft;
     }),
@@ -144,5 +162,25 @@ export default async function AI() {
     ),
     adminReport: report.data,
   };
-  return <ContentEngine data={data} />;
+  return (
+    <>
+      {notice && (
+        <p role="status" className="live-notice">
+          {notice === "published"
+            ? "Published to your social account."
+            : notice === "saved"
+              ? "Schedule saved."
+              : notice === "uncertain"
+                ? "Delivery is uncertain. Check your social profile before trying anything else."
+                : notice.startsWith("rejected-")
+                  ? "The network rejected this attempt. " +
+                    connectionNotice(notice.slice(9))
+                  : notice === "not-saved"
+                    ? "Could not save. Check approval, date, source permissions and connection."
+                    : connectionNotice(notice)}
+        </p>
+      )}
+      <ContentEngine data={data} />
+    </>
+  );
 }
