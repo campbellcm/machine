@@ -666,3 +666,162 @@ describe("Author-controlled X schedules", () => {
     await db.query("select complete_x_publish($1,'787878')", [id]);
   });
 });
+
+describe("Inclusive reward scoring", () => {
+  it("does not penalize extra same-day posts in consistency ties", async () => {
+    await db.exec("begin");
+    try {
+      await db.exec("reset role");
+      await db.query("delete from drafts where organization_id=$1", [org]);
+      await db.query("delete from tracked_posts where organization_id=$1", [
+        org,
+      ]);
+      for (const [person, hour] of [
+        [member, 10],
+        [owner, 11],
+        [member, 12],
+      ] as const) {
+        await db.query(
+          "insert into drafts(organization_id,user_id,body,status,verified,published_at) values($1,$2,'I work at Acme. Public lesson.','published',true,date_trunc('day',now())-interval '2 days'+make_interval(hours=>$3))",
+          [org, person, hour],
+        );
+      }
+      await as(owner);
+      const id = await scalar<string>(
+        "select create_reward_v2($1,'Consistency','Prize','Rules','active_days',now()+interval '1 day',now()+interval '8 days',null)",
+        [org],
+      );
+      await db.exec("reset role");
+      await db.query(
+        "update challenges set starts_at=now()-interval '7 days',ends_at=now(),settling_hours=0 where id=$1",
+        [id],
+      );
+      await as(member);
+      const scores = (
+        await db.query<{ user_id: string; score: number }>(
+          "select * from challenge_scores($1)",
+          [id],
+        )
+      ).rows;
+      expect(scores[0].user_id).toBe(member);
+      expect(scores.map((s) => Number(s.score))).toEqual([1, 1]);
+      await db.exec("set role service_role");
+      await db.query("select advance_challenges()");
+      expect(
+        await scalar(
+          "select user_id from challenge_results where challenge_id=$1 and is_winner",
+          [id],
+        ),
+      ).toBe(member);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+
+  it("counts days, absolute improvement and shared goals with immutable settlement", async () => {
+    await db.exec("begin");
+    try {
+      await db.exec("reset role");
+      await db.query("delete from drafts where organization_id=$1", [org]);
+      await db.query("delete from tracked_posts where organization_id=$1", [
+        org,
+      ]);
+      for (const [person, day] of [
+        [member, 1],
+        [member, 1],
+        [member, 2],
+        [member, 8],
+        [owner, 2],
+      ] as const) {
+        await db.query(
+          "insert into drafts(organization_id,user_id,body,status,verified,published_at) values($1,$2,'I work at Acme. Public lesson.','published',true,now()-make_interval(days=>$3))",
+          [org, person, day],
+        );
+      }
+      await as(owner);
+      const ids: Record<string, string> = {};
+      for (const metric of [
+        "active_days",
+        "improvement_posts",
+        "first_post",
+        "team_posts",
+      ]) {
+        ids[metric] = await scalar<string>(
+          "select create_reward_v2($1,'Challenge','Company prize','Rules',$2,now()+interval '1 day',now()+interval '8 days',3)",
+          [org, metric],
+        );
+      }
+      await db.exec("reset role");
+      await db.query(
+        "update challenges set starts_at=now()-interval '7 days',ends_at=now(),settling_hours=0 where id=any($1::uuid[])",
+        [Object.values(ids)],
+      );
+      await as(member);
+      const scores = async (metric: string) =>
+        (
+          await db.query<{ user_id: string; score: number }>(
+            "select * from challenge_scores($1)",
+            [ids[metric]],
+          )
+        ).rows;
+      expect(
+        Number(
+          (await scores("active_days")).find((p) => p.user_id === member)
+            ?.score,
+        ),
+      ).toBe(2);
+      expect(
+        Number(
+          (await scores("improvement_posts")).find((p) => p.user_id === member)
+            ?.score,
+        ),
+      ).toBe(2);
+      expect(
+        Number(
+          (await scores("first_post")).find((p) => p.user_id === member)?.score,
+        ),
+      ).toBe(0);
+      expect(
+        Number(
+          (await scores("first_post")).find((p) => p.user_id === owner)?.score,
+        ),
+      ).toBe(1);
+      await db.exec("set role service_role");
+      await db.query("select advance_challenges()");
+      expect(
+        await scalar(
+          "select count(*)::int from challenge_results where challenge_id=$1 and is_winner",
+          [ids.team_posts],
+        ),
+      ).toBe(2);
+      await db.query("select advance_challenges()");
+      expect(
+        await scalar(
+          "select count(*)::int from challenge_results where challenge_id=$1",
+          [ids.team_posts],
+        ),
+      ).toBe(2);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("denies direct internal scoring and requires a shared goal", async () => {
+    await as(member);
+    await expect(
+      db.query("select * from reward_scores_internal(gen_random_uuid())"),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      db.query(
+        "select create_reward_v2($1,'Challenge','Prize','Rules','active_days',now()+interval '1 day',now()+interval '8 days',null)",
+        [org],
+      ),
+    ).rejects.toThrow(/Admin/);
+    await as(owner);
+    await expect(
+      db.query(
+        "select create_reward_v2($1,'Challenge','Prize','Rules','team_posts',now()+interval '1 day',now()+interval '8 days',null)",
+        [org],
+      ),
+    ).rejects.toThrow(/target/);
+  });
+});
