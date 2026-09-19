@@ -290,8 +290,31 @@ describe("database authorization and publication state machine", () => {
         "select user_id from conversions where external_id=\'wrong-company\'",
       ),
     ).toBe(null);
-    await db.query("select record_conversion($1,$2,'lead','repeat-touch',now())",[org,c2]);
-    expect(await rpc("select user_id from conversions where external_id='repeat-touch'")).toBe(owner);
+    await db.query(
+      "select record_conversion($1,$2,'lead','repeat-touch',now())",
+      [org, c2],
+    );
+    expect(
+      await rpc(
+        "select user_id from conversions where external_id='repeat-touch'",
+      ),
+    ).toBe(owner);
+    await asUser(owner);
+    const health = await rpc<{
+      unique_clicks: number;
+      attributed: number;
+      unattributed: number;
+    }>("select attribution_health($1)", [org]);
+    expect(health.unique_clicks).toBe(1);
+    expect(health.attributed).toBe(2);
+    expect(health.unattributed).toBe(0);
+    await expect(
+      db.query("select attribution_health($1)", [other]),
+    ).rejects.toThrow(/Admin/);
+    await asUser(teammate);
+    await expect(
+      db.query("select attribution_health($1)", [org]),
+    ).rejects.toThrow(/Admin/);
     await asUser(viewer);
     expect(
       (

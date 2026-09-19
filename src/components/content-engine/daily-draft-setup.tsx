@@ -474,8 +474,9 @@ export function DailyDraftSetup({
           </button>
           {!starting && (
             <p className={styles.deliveryNote}>
-              Delivery connections coming soon. Drafts are available in the app
-              today.
+              {demo
+                ? "Sample workspace. No messages are sent."
+                : "Manage email and Slack in Delivery connections below. Your drafts always remain available here."}
             </p>
           )}
           {enrolled && !paused && (

@@ -88,6 +88,11 @@ export default async function AI({
       ? db.rpc("ce_admin_report", { org: org.id })
       : Promise.resolve({ data: null, error: null }),
   ]);
+  const { data: campaigns } = await db
+    .from("campaigns")
+    .select("id,name")
+    .eq("organization_id", org.id)
+    .eq("active", true);
   const ids = (meta.data || []).map((m) => m.draft_id);
   const { data: drafts } = ids.length
     ? await db
@@ -123,6 +128,7 @@ export default async function AI({
     name: member.display_name || "Teammate",
     company: org.name,
     admin,
+    campaigns: campaigns || [],
     ready: engineReady(),
     setupError: !!settings.error,
     delivery: {

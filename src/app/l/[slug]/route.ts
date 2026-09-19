@@ -14,7 +14,7 @@ export async function GET(
     const db = serviceDatabase();
     const { data: link } = await db
       .from("tracked_links")
-      .select("id,campaign_id,organization_id")
+      .select("id,campaign_id,organization_id,draft_id")
       .eq("slug", slug)
       .single();
     if (!link) return new NextResponse("Link not found", { status: 404 });
@@ -26,6 +26,15 @@ export async function GET(
       .eq("active", true)
       .single();
     if (!campaign) return new NextResponse("Link not found", { status: 404 });
+    const { data: draft } = await db
+      .from("drafts")
+      .select("channel")
+      .eq("id", link.draft_id)
+      .eq("organization_id", link.organization_id)
+      .single();
+    if (!draft || !["linkedin", "x"].includes(draft.channel))
+      return new NextResponse("Link not found", { status: 404 });
+    const channel = draft.channel as "linkedin" | "x";
     let click: string | undefined;
     try {
       const candidate = randomUUID();
@@ -40,7 +49,13 @@ export async function GET(
       const hash = visitorHash(ip, agent, process.env.VISITOR_HASH_SALT || "");
       if (!(await allowRequest("redirect", hash, 120, 60)))
         return NextResponse.redirect(
-          destinationUrl(campaign.destination_url, campaign.utm_campaign, slug),
+          destinationUrl(
+            campaign.destination_url,
+            campaign.utm_campaign,
+            slug,
+            undefined,
+            channel,
+          ),
           { status: 302, headers: { "Cache-Control": "no-store" } },
         );
       const { error } = await db.rpc("log_click", {
@@ -59,6 +74,7 @@ export async function GET(
         campaign.utm_campaign,
         slug,
         click,
+        channel,
       ),
       {
         status: 302,

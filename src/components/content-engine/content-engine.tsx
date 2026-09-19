@@ -1,4 +1,5 @@
 "use client";
+import { attachLink } from "@/app/workspace/campaigns/actions";
 import { PublishControls, PublishingCalendar } from "./publish-controls";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -1029,6 +1030,41 @@ function DraftCard({
           </ul>
         )}
       </details>
+      {!demo &&
+        d.is_owner &&
+        !deliveryLocked &&
+        d.state !== "published" &&
+        !d.invalidated &&
+        !!data.campaigns?.length && (
+          <details className="live-card">
+            <summary>Add a tracked campaign link</summary>
+            <p>
+              Measure clicks and submitted conversions from this post. Adding a
+              link requires you to review and approve the updated text.
+            </p>
+            <form action={attachLink}>
+              <input type="hidden" name="id" value={d.id} />
+              <input type="hidden" name="revision" value={d.revision} />
+              <input type="hidden" name="return_to" value="ai" />
+              <label>
+                Campaign
+                <select name="campaign" required>
+                  {data.campaigns.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="live-button secondary"
+                disabled={busy || editing}
+              >
+                Add campaign link
+              </button>
+            </form>
+          </details>
+        )}
       {!demo && <PublishControls draft={d} disabled={editing || busy} />}
       {d.state !== "published" &&
         d.state !== "archived" &&

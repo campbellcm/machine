@@ -30,7 +30,13 @@ export async function attachLink(f: FormData) {
     expected_revision: Number(f.get("revision")),
   });
   revalidatePath("/workspace/drafts");
-  redirect("/workspace/drafts?notice=" + (error ? "failed" : "saved"));
+  revalidatePath("/workspace/ai");
+  redirect(
+    f.get("return_to") === "ai"
+      ? "/workspace/ai?view=drafts&notice=" +
+          (error ? "link-failed" : "link-added")
+      : "/workspace/drafts?notice=" + (error ? "failed" : "saved"),
+  );
 }
 export async function createKey() {
   const { db, org } = await workspace();
