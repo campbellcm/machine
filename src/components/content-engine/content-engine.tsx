@@ -1,4 +1,5 @@
 "use client";
+import { adaptContent } from "@/app/workspace/ai/content-actions";
 import { attachLink } from "@/app/workspace/campaigns/actions";
 import { PublishControls, PublishingCalendar } from "./publish-controls";
 import { useEffect, useState } from "react";
@@ -1065,6 +1066,23 @@ function DraftCard({
             </form>
           </details>
         )}
+      {!demo && d.is_owner && !deliveryLocked && !d.invalidated && (
+        <form action={adaptContent}>
+          <input type="hidden" name="id" value={d.id} />
+          <input
+            type="hidden"
+            name="platform"
+            value={d.channel === "x" ? "linkedin" : "x"}
+          />
+          <button className="live-button secondary" disabled={busy || editing}>
+            Draft a {d.channel === "x" ? "LinkedIn" : "X"} version
+          </button>
+          <small>
+            A separate version of this idea, using the same approved evidence.
+            Review and approve each channel separately.
+          </small>
+        </form>
+      )}
       {!demo && <PublishControls draft={d} disabled={editing || busy} />}
       {d.state !== "published" &&
         d.state !== "archived" &&

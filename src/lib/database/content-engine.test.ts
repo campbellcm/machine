@@ -604,6 +604,87 @@ describe("Content engine permissions and workflow", () => {
       value("select teammate_public_posts($1,$2)", [org, member]),
     ).rejects.toThrow(/Membership/);
   });
+  it("adapts an idea into a separate unapproved channel draft", async () => {
+    await db.exec("begin");
+    try {
+      await as(member);
+      await command("profile", {
+        config: { ...defaultProfile, daily_count: 1 },
+        consent: true,
+        step: 6,
+      });
+      // Isolate capacity from earlier scenarios while retaining production limits.
+      await db.exec("reset role");
+      await db.query(
+        "update ce_settings set config=jsonb_set(config,'{employee_limit}','10') where organization_id=$1",
+        [org],
+      );
+      await as(member);
+      const id = await value<string>("select adapt_content($1,'x')", [draft]);
+      expect(await value("select adapt_content($1,'x')", [draft])).toBe(id);
+      const context = await claim(id);
+      expect(
+        (context as unknown as { profile: { platform: string } }).profile
+          .platform,
+      ).toBe("x");
+      await finish(context, {
+        platform: "x",
+        topic: "Ownership",
+        variants: [
+          {
+            body: "I work at Acme. Clear ownership makes handoffs easier.",
+            riskFlags: [],
+            sourceIds: [source],
+            atomIds: [atom],
+          },
+        ],
+      });
+      expect(
+        await value(
+          "select channel from drafts where id in(select draft_id from ce_draft_meta where job_id=$1)",
+          [id],
+        ),
+      ).toBe("x");
+      expect(
+        await value("select state from ce_draft_meta where job_id=$1", [id]),
+      ).toBe("ready_for_employee");
+      await as(owner);
+      await expect(
+        value("select adapt_content($1,'x')", [draft]),
+      ).rejects.toThrow(/Author/);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("creates approved campaign evidence separately from campaign preferences", async () => {
+    await db.exec("begin");
+    try {
+      await as(owner);
+      const result = await value<{ id: string }>(
+        "select create_campaign_brief($1,'Fall launch','Explain handoffs','Team leaders','The product supports shared checklists and assigned owners.','Try the checklist',true)",
+        [org],
+      );
+      expect(result.id).toBeTruthy();
+      expect(
+        await value("select content from ce_sources where id=$1", [result.id]),
+      ).toBe("The product supports shared checklists and assigned owners.");
+      expect(
+        await value(
+          "select config->>'campaigns' from ce_settings where organization_id=$1",
+          [org],
+        ),
+      ).toContain("Audience: Team leaders");
+      await as(member);
+      await expect(
+        value(
+          "select create_campaign_brief($1,'Fall launch','Explain handoffs','Team leaders','The product supports shared checklists and assigned owners.','Try the checklist',true)",
+          [org],
+        ),
+      ).rejects.toThrow(/admin/);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
   it("cancels in-flight work on pause and invalidates drafts on source removal", async () => {
     await as(member);
     const id = (

@@ -1,5 +1,13 @@
 export function connectionNotice(state: string) {
   const messages: Record<string, string> = {
+    "adapt-queued":
+      "Channel version queued. It will appear in Drafts for separate review.",
+    "adapt-failed":
+      "Could not prepare another channel version. Check current evidence, enrollment and company limits.",
+    "brief-saved":
+      "Campaign brief saved. Approved facts are being prepared for your team.",
+    "brief-failed":
+      "Could not save the brief. Check admin access, AI enrollment and required fields.",
     "link-added":
       "Campaign link added. Review and approve the updated text before publishing.",
     "link-failed":
