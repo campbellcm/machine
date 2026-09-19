@@ -409,6 +409,149 @@ describe("Content engine permissions and workflow", () => {
       }),
     ).rejects.toThrow(/ce_daily_count_valid/);
   });
+  it("queues private daily delivery once, enforces leases and cancels on pause", async () => {
+    await db.exec("begin");
+    try {
+      await as(member);
+      await command("profile", {
+        config: {
+          ...defaultProfile,
+          daily_count: 1,
+          delivery_preference: "email",
+        },
+        consent: true,
+        step: 6,
+      });
+      const queued = await command("generate", {
+        id: idea,
+        key: crypto.randomUUID(),
+      });
+      const job = await claim(queued.id);
+      await db.query("update ce_jobs set idempotency_key=$2 where id=$1", [
+        queued.id,
+        "daily-draft:" + queued.id,
+      ]);
+      await finish(job, {
+        platform: "linkedin",
+        topic: "Ownership",
+        variants: [
+          {
+            body: "I work at Acme. Clear ownership helps teams.",
+            riskFlags: [],
+            sourceIds: [source],
+            atomIds: [atom],
+          },
+        ],
+      });
+      const delivery = await value<string>(
+        "select id from draft_deliveries where job_id=$1",
+        [queued.id],
+      );
+      expect(delivery).toBeTruthy();
+      await as(owner);
+      expect(await value("select count(*)::int from draft_deliveries")).toBe(0);
+      await expect(
+        db.query("select claim_draft_delivery($1)", [delivery]),
+      ).rejects.toThrow();
+    } finally {
+      await db.exec("rollback");
+    }
+    await db.exec("begin");
+    try {
+      await as(member);
+      await command("profile", {
+        config: {
+          ...defaultProfile,
+          daily_count: 1,
+          delivery_preference: "email",
+        },
+        consent: true,
+        step: 6,
+      });
+      const queued = await command("generate", {
+        id: idea,
+        key: crypto.randomUUID(),
+      });
+      const job = await claim(queued.id);
+      await db.query("update ce_jobs set idempotency_key=$2 where id=$1", [
+        queued.id,
+        "daily-draft:" + queued.id,
+      ]);
+      await finish(job, {
+        platform: "linkedin",
+        topic: "Ownership",
+        variants: [
+          {
+            body: "I work at Acme. Clear ownership helps teams.",
+            riskFlags: [],
+            sourceIds: [source],
+            atomIds: [atom],
+          },
+        ],
+      });
+      const delivery = await value<string>(
+        "select id from draft_deliveries where job_id=$1",
+        [queued.id],
+      );
+      const lease = await value<{ lease: string }>(
+        "select claim_draft_delivery($1)",
+        [delivery],
+      );
+      expect(lease.lease).toBeTruthy();
+      expect(
+        await value("select claim_draft_delivery($1)", [delivery]),
+      ).toBeNull();
+      expect(
+        await value("select finish_draft_delivery($1,$2,'sent')", [
+          delivery,
+          crypto.randomUUID(),
+        ]),
+      ).toBe(false);
+      expect(
+        await value("select finish_draft_delivery($1,$2,'sent')", [
+          delivery,
+          lease.lease,
+        ]),
+      ).toBe(true);
+      await db.query(
+        "update draft_deliveries set status='pending' where id=$1",
+        [delivery],
+      );
+      await db.query(
+        "update draft_deliveries set channel='slack',status='sending',started_at=now()-interval '3 minutes' where id=$1",
+        [delivery],
+      );
+      expect(
+        await value("select claim_draft_delivery($1)", [delivery]),
+      ).toBeNull();
+      expect(
+        await value("select status from draft_deliveries where id=$1", [
+          delivery,
+        ]),
+      ).toBe("uncertain");
+      await db.query(
+        "update draft_deliveries set channel='email',status='pending' where id=$1",
+        [delivery],
+      );
+      await as(member);
+      await command("pause");
+      await service();
+      expect(
+        await value("select claim_draft_delivery($1)", [delivery]),
+      ).toBeNull();
+      expect(
+        await value("select status from draft_deliveries where id=$1", [
+          delivery,
+        ]),
+      ).toBe("canceled");
+      await as(member);
+      await expect(
+        db.query("select * from slack_delivery_accounts"),
+      ).rejects.toThrow();
+    } finally {
+      await db.exec("rollback");
+    }
+  });
   it("cancels in-flight work on pause and invalidates drafts on source removal", async () => {
     await as(member);
     const id = (

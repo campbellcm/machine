@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { z } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 import { database } from "@/lib/supabase/server";
 import { appUrl } from "@/lib/supabase/config";
@@ -6,7 +8,15 @@ export async function GET(request: NextRequest) {
   if (code) {
     const db = await database();
     const { error } = await db.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(appUrl() + "/workspace");
+    if (!error) {
+      const org = z
+        .uuid()
+        .safeParse((await cookies()).get("crewcast_inbox_org")?.value);
+      return NextResponse.redirect(
+        appUrl() +
+          (org.success ? "/draft-inbox?org=" + org.data : "/workspace"),
+      );
+    }
   }
   return NextResponse.redirect(appUrl() + "/login?message=expired-link");
 }

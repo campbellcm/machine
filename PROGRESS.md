@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M12 — author-controlled AI publishing and scheduling.
+Current milestone: M13 — private daily draft delivery.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -326,3 +326,16 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Adds Publish now / Schedule controls after approval and a date-ordered calendar within AI. Device timezone is shown, and the exact UTC instant is displayed before scheduling. X and LinkedIn use the existing 15-minute maintenance cadence; delayed queues are disclosed.
 - Schedule eligibility checks the selected channel, not any account. X can schedule beyond short access-token lifetime with refresh access. The scheduled worker avoids renewal within its posting deadline; accounts needing renewal fail visibly for author action. Missing connections fail before a publish claim; definitive provider rejection releases approval safely; ambiguous delivery remains locked.
 - 116 unit/database/API tests, typecheck and lint pass. Independent review cleared after preserving delivery locks through reject/archive/source invalidation and matching worker updates to the captured schedule revision/time. Hosted checks pending. Live Supabase/OAuth/publishing verification still requires provider setup; no real post has been sent.
+
+
+## M12 release
+
+- PR #11 merged at 3fd4586bae3f1300983b60d2068a44b737ac5c25 after independent review, 116 tests, full CI and hosted preview checks. Author control is retained; live provider verification still requires setup.
+
+## M13 — daily draft delivery
+
+- Additive migration 019 queues one generic inbox notification per completed daily generation job. Own-only delivery history, service-only encrypted Slack credentials, membership/consent/source checks and compare-and-set leases prevent cross-user disclosure and duplicate sends.
+- Email uses the existing Resend integration and verified sign-in address with a stable idempotency key. Slack OAuth requests bot chat:write only and sends to the authorizing Slack user. No source notes or post content is sent externally. iMessage is deferred; demo preferences explicitly send nothing.
+- Delivery history, connection/disconnection, setup instructions and actionable status are within AI and Setup. Scheduled pilot capacity is one notice per 15-minute slot. Provider setup is required; configured credentials are not proof of a successful delivery.
+- Interrupted sends become uncertain and are not blindly replayed. Abandoned email workers may reclaim within 20 hours using the same Resend key; abandoned Slack sends become uncertain. No provider messages were sent during development.
+- Official documentation checked: Resend idempotency (24-hour window), Slack OAuth v2 and chat.postMessage. Unit/database tests cover verified recipient, payload minimization, ownership/RLS, leases, pause cancellation, Slack uncertainty and scope validation. Independent review and hosted checks pending.

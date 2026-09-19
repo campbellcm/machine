@@ -83,6 +83,17 @@ export type EngineData = {
   admin: boolean;
   ready: boolean;
   setupError: boolean;
+  delivery?: {
+    emailReady: boolean;
+    slackConnected: boolean;
+    history: {
+      id: string;
+      channel: string;
+      status: string;
+      created_at: string;
+      issue: string | null;
+    }[];
+  };
   strategy: Strategy;
   profile: {
     config: ContentProfile;

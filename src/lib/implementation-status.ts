@@ -9,7 +9,7 @@ export const implementationStatus = [
     area: "Daily AI drafts",
     status: "Implemented · API credentials required",
     detail:
-      "OpenAI or Claude, role and approved context, three private options daily, timezone schedule, run now, pause, bounded retries and author approval. Native Fathom, Slack and CRM ingestion is not implemented.",
+      "OpenAI or Claude, role and approved context, three private options daily, timezone schedule, run now, pause, bounded retries and author approval. Email and Slack reminders link to private review; provider setup and live verification required. Native Fathom, Slack and CRM ingestion is not implemented.",
   },
   {
     area: "LinkedIn & X",

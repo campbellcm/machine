@@ -144,9 +144,35 @@ export default function Setup() {
           Request tweet.read, tweet.write, users.read and offline.access. New
           connections support encrypted automatic renewal. Existing users must
           reconnect once to grant offline access. Revoked or interrupted renewal
-          requires reconnecting. Optional X post tracking imports recent original posts with public metric snapshots after employee opt-in. LinkedIn analytics needs additional approved API access. Author-approved X scheduling is supported with offline access and a working maintenance job.
+          requires reconnecting. Optional X post tracking imports recent
+          original posts with public metric snapshots after employee opt-in.
+          LinkedIn analytics needs additional approved API access.
+          Author-approved X scheduling is supported with offline access and a
+          working maintenance job.
         </p>
         <a href="https://developer.x.com/">Open X developers ↗</a>
+      </section>
+      <section className="live-card">
+        <h2>Deliver private draft reminders</h2>
+        <p>
+          Email uses your verified Resend sender and each member’s verified
+          sign-in email. Set RESEND_API_KEY and EMAIL_FROM, then choose Email in
+          AI. Notifications contain a private inbox link, never source notes or
+          draft text.
+        </p>
+        <p>
+          For Slack, create a Slack app with the bot scope chat:write, enable
+          messages in its App Home, and register your HTTPS domain followed by{" "}
+          <code>/api/delivery/slack/callback</code>. Set SLACK_CLIENT_ID and
+          SLACK_CLIENT_SECRET. Each member connects their own Slack account in
+          AI. No channel-reading permission is requested.
+        </p>
+        <p>
+          Delivery runs on the existing Netlify scheduler with CRON_SECRET, at
+          most one notification per 15-minute slot. Busy pilot queues can arrive
+          later. Verify a daily draft and its delivery history with your own
+          account before inviting your team. iMessage is deferred.
+        </p>
       </section>
       <h2>Implementation status</h2>
       <p>
