@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { TeamAvatar } from "@/components/v1/team-avatar";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -11,9 +12,9 @@ import { inviteMember, changeMember } from "../actions";
 export default async function Team({
   searchParams,
 }: {
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{ notice?: string; person?: string }>;
 }) {
-  const { notice } = await searchParams;
+  const { notice, person } = await searchParams;
   const { db, org, member, user } = await workspace();
   const admin = ["owner", "admin"].includes(member.role);
   const { data: connections, error: connectionError } = await db.rpc(
@@ -52,6 +53,37 @@ export default async function Team({
       p.photo_url,
     ]),
   );
+  const { data: program, error: programError } = await db.rpc("team_program", {
+    org: org.id,
+  });
+  const progress = (program || []) as {
+    id: string;
+    participating: boolean;
+    voice_ready: boolean | null;
+    connected: boolean;
+    first_post: boolean;
+    posts: number;
+    clicks: number;
+    leads: number;
+  }[];
+  const selected = z.uuid().safeParse(person);
+  const selectedPerson = selected.success
+    ? profiles.find((p) => p.user_id === selected.data)
+    : undefined;
+  const selectedStats = progress.find((p) => p.id === selectedPerson?.user_id);
+  const publicPosts = selectedPerson
+    ? await db.rpc("teammate_public_posts", {
+        org: org.id,
+        person: selectedPerson.user_id,
+      })
+    : null;
+  const posts = (publicPosts?.data || []) as {
+    id: string;
+    body: string;
+    channel: string;
+    url: string | null;
+    published_at: string;
+  }[];
   const token = (await cookies()).get("crewcast_invite")?.value;
   return (
     <div className="v1">
@@ -87,6 +119,91 @@ export default async function Team({
           migrations.
         </p>
       )}
+      {programError ? (
+        <p role="status">
+          Participation overview is unavailable until the latest database
+          update.
+        </p>
+      ) : (
+        admin && (
+          <section className="live-card">
+            <h2>Program participation</h2>
+            <p>
+              {progress.filter((p) => p.participating).length} opted in ·{" "}
+              {progress.filter((p) => p.connected).length} connected ·{" "}
+              {progress.filter((p) => p.first_post).length} shared their first
+              post · {progress.filter((p) => p.posts > 0).length} posted in the
+              last 30 days.
+            </p>
+            <p>
+              {
+                accountHealth.filter((a) =>
+                  ["reconnect", "permissions"].includes(a.state),
+                ).length
+              }{" "}
+              connections need attention. Offer help with setup or content when
+              teammates want it. Participation is optional and is not a measure
+              of employee productivity.
+            </p>
+          </section>
+        )
+      )}
+      {selectedPerson && (
+        <section className="live-card" aria-label="Teammate performance">
+          <Link href="/workspace/team">Close profile</Link>
+          <div className="team-person">
+            <TeamAvatar
+              name={selectedPerson.display_name || "Teammate"}
+              src={photoByUser.get(selectedPerson.user_id)}
+            />
+            <div>
+              <h2>{selectedPerson.display_name}</h2>
+              <p>{selectedPerson.job_title}</p>
+            </div>
+          </div>
+          {selectedStats && (
+            <p>
+              Last 30 days: {selectedStats.posts} posts · {selectedStats.clicks}{" "}
+              unique tracked clicks · {selectedStats.leads} attributed leads.
+            </p>
+          )}
+          <p>
+            Latest 20 published or author-selected posts. Private drafts and
+            source notes are never included. Views and sales are unavailable
+            until supported coverage is established.
+          </p>
+          {publicPosts?.error ? (
+            <p>Published work is unavailable.</p>
+          ) : (
+            posts.map((p) => (
+              <article className="live-card" key={p.id}>
+                <small>
+                  {p.channel === "x" ? "X" : "LinkedIn"} ·{" "}
+                  {new Date(p.published_at).toLocaleDateString("en-US", {
+                    timeZone: org.timezone,
+                  })}
+                </small>
+                <details>
+                  <summary>
+                    {p.body.slice(0, 160)}
+                    {p.body.length > 160 ? "…" : ""}
+                  </summary>
+                  <p style={{ whiteSpace: "pre-wrap" }}>{p.body}</p>
+                </details>
+                {p.url &&
+                  /^https:\/\/(www\.)?(x\.com|linkedin\.com)\//.test(p.url) && (
+                    <a href={p.url} target="_blank" rel="noreferrer">
+                      View post ↗
+                    </a>
+                  )}
+              </article>
+            ))
+          )}
+          {!posts.length && !publicPosts?.error && (
+            <p>No published work shared yet.</p>
+          )}
+        </section>
+      )}
       <div className="team-list" role="list" aria-label="Team members">
         {profiles.map((p) => (
           <section className="team-row" role="listitem" key={p.user_id}>
@@ -96,8 +213,23 @@ export default async function Team({
                 src={photoByUser.get(p.user_id)}
               />
               <div>
-                <h3>{p.display_name || "New teammate"}</h3>
+                <h3>
+                  <Link href={"/workspace/team?person=" + p.user_id}>
+                    {p.display_name || "New teammate"}
+                  </Link>
+                </h3>
                 <p>{p.job_title}</p>
+                {progress
+                  .filter((r) => r.id === p.user_id)
+                  .map((r) => (
+                    <small key={r.id}>
+                      Account {r.connected ? "✓" : "pending"} ·{" "}
+                      {r.voice_ready !== null && (
+                        <>Voice {r.voice_ready ? "✓" : "pending"} · </>
+                      )}
+                      First post {r.first_post ? "✓" : "pending"}
+                    </small>
+                  ))}
               </div>
             </div>
             {(["linkedin", "x"] as const).map((channel) => {

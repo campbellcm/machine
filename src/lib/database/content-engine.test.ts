@@ -571,6 +571,39 @@ describe("Content engine permissions and workflow", () => {
       await db.exec("rollback");
     }
   });
+  it("projects only published work and safe onboarding flags to teammates", async () => {
+    await as(member);
+    const program = await value<{ id: string; voice_ready: boolean | null }[]>(
+      "select team_program($1)",
+      [org],
+    );
+    expect(program.find((p) => p.id === owner)?.voice_ready).toBeNull();
+    expect(program.find((p) => p.id === member)?.voice_ready).not.toBeNull();
+    const ownPublic = await value<{ id: string; body: string }[]>(
+      "select teammate_public_posts($1,$2)",
+      [org, member],
+    );
+    const privateIds = (
+      await db.query<{ id: string }>(
+        "select id from drafts where user_id=$1 and status<>'published'",
+        [member],
+      )
+    ).rows.map((d) => d.id);
+    expect(ownPublic.some((p) => privateIds.includes(p.id))).toBe(false);
+    await as(owner);
+    const adminPublic = await value<{ id: string }[]>(
+      "select teammate_public_posts($1,$2)",
+      [org, member],
+    );
+    expect(adminPublic.some((p) => privateIds.includes(p.id))).toBe(false);
+    await as(outsider);
+    await expect(value("select team_program($1)", [org])).rejects.toThrow(
+      /Membership/,
+    );
+    await expect(
+      value("select teammate_public_posts($1,$2)", [org, member]),
+    ).rejects.toThrow(/Membership/);
+  });
   it("cancels in-flight work on pause and invalidates drafts on source removal", async () => {
     await as(member);
     const id = (

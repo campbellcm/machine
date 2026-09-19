@@ -8,6 +8,9 @@ import { TeamAvatar } from "./team-avatar";
 import { PageHeading } from "@/components/shared";
 export function DemoTeam() {
   const [query, setQuery] = useState("");
+  const [person, setPerson] = useState<string | null>(null);
+  const report = demoReport("2026-09-01", "2026-09-30");
+  const selected = report.people.find((p) => p.id === person);
   return (
     <div className="v1">
       <PageHeading
@@ -30,6 +33,47 @@ export function DemoTeam() {
           Set up your real team
         </Link>
       </div>
+      <section className="live-card">
+        <h2>Program participation</h2>
+        <p>
+          Sample: {report.people.filter((p) => p.channels?.length).length}{" "}
+          connected · {report.people.filter((p) => p.posts > 0).length} shared
+          content this month.
+        </p>
+        <p>
+          Offer support with setup and content. Participation is optional, not a
+          measure of employee productivity.
+        </p>
+      </section>
+      {selected && (
+        <section className="live-card" aria-label="Teammate performance">
+          <button
+            className="live-button secondary"
+            onClick={() => setPerson(null)}
+          >
+            Close profile
+          </button>
+          <h2>{selected.name}</h2>
+          <p>
+            September sample: {selected.posts} posts · {selected.clicks} clicks
+            · {selected.leads} leads.
+          </p>
+          <p>
+            Published work only. Private drafts and source notes stay private.
+          </p>
+          {report.posts
+            .filter((p) => p.user_id === selected.id)
+            .map((p) => (
+              <details key={p.id}>
+                <summary>
+                  {p.channel === "x" ? "X" : "LinkedIn"} ·{" "}
+                  {p.body.slice(0, 100)}…
+                </summary>
+                <p>{p.body}</p>
+              </details>
+            ))}
+        </section>
+      )}
       <div className="team-list" role="list" aria-label="Team members">
         {demoData.teammates
           .filter((p) =>
@@ -39,7 +83,23 @@ export function DemoTeam() {
           )
           .map((p) => (
             <article className="team-row" role="listitem" key={p.id}>
-              <div className="team-person"><TeamAvatar name={p.name} src={`https://i.pravatar.cc/88?img=${[12,47,13,44,11,49,14,48,15,45,16,46][demoData.teammates.indexOf(p)]}`} /><div><h3>{p.name}</h3><p>{p.title}</p></div></div>
+              <div className="team-person">
+                <TeamAvatar
+                  name={p.name}
+                  src={`https://i.pravatar.cc/88?img=${[12, 47, 13, 44, 11, 49, 14, 48, 15, 45, 16, 46][demoData.teammates.indexOf(p)]}`}
+                />
+                <div>
+                  <h3>
+                    <button
+                      className="live-button secondary"
+                      onClick={() => setPerson(p.id)}
+                    >
+                      {p.name}
+                    </button>
+                  </h3>
+                  <p>{p.title}</p>
+                </div>
+              </div>
               <div className="team-channel">
                 <strong>LinkedIn</strong>
                 <small>
@@ -189,11 +249,30 @@ export function DemoRewards() {
       )}
       {notice && <p role="status">{notice}</p>}
       <div className="rewards-list">
-        {prizes.map(p => {
-          const people = rankPeople(demoReport(p.start, p.end).people, p.metric);
-          return <RewardRow key={p.id} title={p.title} prize={p.prize} metric={p.metric === "views" ? "impressions" : p.metric} dates={`${p.start} — ${p.end}`} status="Sample competition" demo
-            leaders={people.map(l => ({ id: l.id, name: l.name, photo: l.photo_url, rank: l.rank, score: l[p.metric] ?? 0 }))}
-            rules="The highest score in the selected period leads this sample competition. Tied scores share a rank. These are illustrative prizes and results, not a live giveaway." />;
+        {prizes.map((p) => {
+          const people = rankPeople(
+            demoReport(p.start, p.end).people,
+            p.metric,
+          );
+          return (
+            <RewardRow
+              key={p.id}
+              title={p.title}
+              prize={p.prize}
+              metric={p.metric === "views" ? "impressions" : p.metric}
+              dates={`${p.start} — ${p.end}`}
+              status="Sample competition"
+              demo
+              leaders={people.map((l) => ({
+                id: l.id,
+                name: l.name,
+                photo: l.photo_url,
+                rank: l.rank,
+                score: l[p.metric] ?? 0,
+              }))}
+              rules="The highest score in the selected period leads this sample competition. Tied scores share a rank. These are illustrative prizes and results, not a live giveaway."
+            />
+          );
         })}
       </div>
     </div>
