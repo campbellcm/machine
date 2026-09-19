@@ -1,3 +1,6 @@
+import { emailDeliveryReady } from "@/lib/delivery/worker";
+import { slackConfig } from "@/lib/delivery/slack";
+import { disconnectSlack } from "@/lib/delivery/actions";
 import { connectionNotice } from "@/lib/social/health";
 import { workspace } from "@/lib/supabase/server";
 import { engineReady } from "@/lib/content-engine/service";
@@ -11,9 +14,9 @@ import type { EngineData, EngineDraft } from "@/lib/content-engine/types";
 export default async function AI({
   searchParams,
 }: {
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{ notice?: string; view?: string }>;
 }) {
-  const { notice } = await searchParams;
+  const { notice, view } = await searchParams;
   const { db, org, user, member } = await workspace();
   const admin = ["owner", "admin"].includes(member.role);
   const [
@@ -104,6 +107,16 @@ export default async function AI({
   const c = connections.data?.find(
     (p: { user_id: string }) => p.user_id === user.id,
   );
+  const [slack, deliveryHistory] = await Promise.all([
+    db.rpc("slack_delivery_status", { org: org.id }),
+    db
+      .from("draft_deliveries")
+      .select("id,channel,status,created_at,issue")
+      .eq("organization_id", org.id)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
   const parsedProfile = profileSchema.safeParse(profile.data?.config);
   const strategy = strategySchema.safeParse(settings.data?.config);
   const data: EngineData = {
@@ -112,6 +125,11 @@ export default async function AI({
     admin,
     ready: engineReady(),
     setupError: !!settings.error,
+    delivery: {
+      emailReady: emailDeliveryReady(),
+      slackConnected: !!slack.data?.connected,
+      history: deliveryHistory.data || [],
+    },
     strategy:
       admin && strategy.success
         ? strategy.data
@@ -180,7 +198,52 @@ export default async function AI({
                     : connectionNotice(notice)}
         </p>
       )}
-      <ContentEngine data={data} />
+      <ContentEngine
+        key={org.id + (view || "")}
+        data={data}
+        initialView={view === "drafts" ? "Drafts" : "Setup"}
+      />
+      <details className="live-card">
+        <summary>Draft delivery connections & history</summary>
+        <p>
+          Email notifications go to your verified sign-in email. Slack
+          notifications go only to the Slack account you connect. Messages link
+          to private review in this app; they do not publish posts or include
+          source notes.
+        </p>
+        <p>
+          Email:{" "}
+          {emailDeliveryReady()
+            ? "Sender configured · first delivery still needs verification"
+            : "Company sender setup required"}
+          . Slack: {slack.data?.connected ? "Connected" : "Not connected"}.
+        </p>
+        {slack.data?.connected ? (
+          <form action={disconnectSlack}>
+            <button className="live-button secondary">
+              Disconnect Slack delivery
+            </button>
+          </form>
+        ) : slackConfig() ? (
+          <form action="/api/delivery/slack/connect" method="post">
+            <button className="live-button">Connect my Slack for drafts</button>
+          </form>
+        ) : (
+          <a href="/setup">Set up Slack delivery</a>
+        )}
+        <p>iMessage is deferred. You can always review drafts here.</p>
+        {deliveryHistory.error ? (
+          <p>Apply the latest delivery migration.</p>
+        ) : (
+          data.delivery?.history.map((d) => (
+            <p key={d.id}>
+              {new Date(d.created_at).toLocaleDateString()} · {d.channel} ·{" "}
+              {d.status}
+              {d.issue ? ` · ${d.issue}` : ""}
+            </p>
+          ))
+        )}
+      </details>
     </>
   );
 }

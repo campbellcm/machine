@@ -45,14 +45,16 @@ const adminTabs = [
 export function ContentEngine({
   data,
   demo = false,
+  initialView = "Setup",
 }: {
   data: EngineData;
   demo?: boolean;
+  initialView?: "Setup" | "Drafts";
 }) {
   const router = useRouter();
   const [sample, setSample] = useState(data);
   const current = demo ? sample : data;
-  const [tab, setTab] = useState("Setup"),
+  const [tab, setTab] = useState<string>(initialView),
     [admin, setAdmin] = useState(false),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),

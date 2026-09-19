@@ -186,9 +186,7 @@ test("simple AI preferences save quantity and label unavailable delivery honestl
     page.getByRole("button", { name: "Slack", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
-    page.getByText(
-      "Slack delivery is not connected yet. Your drafts will be available here in the app.",
-    ),
+    page.getByText("Sample preference only. Drafts stay in this preview."),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Make my content", exact: true })

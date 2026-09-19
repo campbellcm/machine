@@ -7,7 +7,6 @@ import {
   WandSparkles,
   Check,
   Mail,
-  MessageCircle,
   Hash,
   Sparkles,
   ShieldCheck,
@@ -23,7 +22,6 @@ import styles from "./daily-draft-setup.module.css";
 const channels = [
   { id: "email", label: "Email", Icon: Mail },
   { id: "slack", label: "Slack", Icon: Hash },
-  { id: "imessage", label: "iMessage", Icon: MessageCircle },
 ] as const;
 type Command = (
   operation: string,
@@ -56,10 +54,11 @@ export function DailyDraftSetup({
     };
     return {
       ...initial,
-      delivery_preference:
-        initial.delivery_preference === "whatsapp"
-          ? "email"
-          : initial.delivery_preference,
+      delivery_preference: ["whatsapp", "imessage"].includes(
+        initial.delivery_preference,
+      )
+        ? "email"
+        : initial.delivery_preference,
     };
   });
   const [consent, setConsent] = useState(false),
@@ -307,7 +306,7 @@ export function DailyDraftSetup({
         <fieldset disabled={busy} className={styles.formFields}>
           <h2 className={styles.dailyHeading}>
             Or get {count} AI {count === 1 ? "draft" : "drafts"} per day
-            <br /> delivered via email, Slack or iMessage.
+            <br /> delivered via email or Slack.
           </h2>
           <p className={styles.quantityNote}>
             Ready when you are. Just review and publish.
@@ -339,8 +338,15 @@ export function DailyDraftSetup({
                   ))}
                 </div>
                 <p className={styles.deliveryNote}>
-                  {channel.label} delivery is not connected yet. Your drafts
-                  will be available here in the app.
+                  {demo
+                    ? "Sample preference only. Drafts stay in this preview."
+                    : channel.id === "email"
+                      ? data.delivery?.emailReady
+                        ? "Daily draft notifications will go to your verified sign-in email, with a link to review here."
+                        : "Your company needs to configure its email sender. Drafts remain available here."
+                      : data.delivery?.slackConnected
+                        ? "Daily draft notifications will go to your connected Slack account, with a link to review here."
+                        : "Connect Slack in Delivery connections below. Drafts remain available here."}
                 </p>
               </div>
               {starting && (

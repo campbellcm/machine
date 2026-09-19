@@ -1,5 +1,9 @@
 export function connectionNotice(state: string) {
   const messages: Record<string, string> = {
+    "slack-connected":
+      "Slack delivery connected. Select Slack in your daily draft preferences to use it.",
+    "slack-disconnected": "Slack delivery disconnected.",
+    "delivery-failed": "Delivery connection failed. Check setup and try again.",
     checked:
       "Profile access verified. This does not verify publishing or analytics permissions.",
     reconnect:
