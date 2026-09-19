@@ -685,6 +685,117 @@ describe("Content engine permissions and workflow", () => {
       await db.exec("rollback");
     }
   });
+  it("stages imports privately and requires author review before AI use", async () => {
+    await db.exec("begin");
+    try {
+      await service();
+      await db.query(
+        "select store_source_credential($1,$2,'fathom','encrypted',null)",
+        [org, member],
+      );
+      const id = await value<string>(
+        "select stage_source_import($1,$2,'fathom','123','Shared checklists can clarify who owns the next step.','encrypted')",
+        [org, member],
+      );
+      await as(owner);
+      expect(
+        (await db.query("select * from source_imports")).rows,
+      ).toHaveLength(0);
+      await as(member);
+      expect(
+        (await db.query("select * from source_imports")).rows,
+      ).toHaveLength(1);
+      const before = await value<number>(
+        "select count(*)::int from ce_sources",
+      );
+      const approved = await value<{ id: string }>(
+        "select approve_source_import($1,'Shared checklists can clarify who owns the next step.','inspiration_only',true)",
+        [id],
+      );
+      expect(await value<number>("select count(*)::int from ce_sources")).toBe(
+        before + 1,
+      );
+      expect(
+        await value("select visibility from ce_sources where id=$1", [
+          approved.id,
+        ]),
+      ).toBe("private");
+      expect(
+        await value("select content from source_imports where id=$1", [id]),
+      ).toBe("");
+      await db.query("select disconnect_source($1,'fathom')", [org]);
+      expect(
+        (await db.query("select * from ce_sources where id=$1", [approved.id]))
+          .rows,
+      ).toHaveLength(0);
+      expect(
+        (await db.query("select * from source_imports")).rows,
+      ).toHaveLength(0);
+      await expect(
+        db.query("select * from source_credentials"),
+      ).rejects.toThrow(/permission denied/);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("blocks non-author import approval", async () => {
+    await db.exec("begin");
+    try {
+      await service();
+      await db.query(
+        "select store_source_credential($1,$2,'slack','encrypted',null)",
+        [org, member],
+      );
+      const id = await value<string>(
+        "select stage_source_import($1,$2,'slack','C123:123','Shared checklists can clarify who owns the next step.','encrypted')",
+        [org, member],
+      );
+      await as(owner);
+      await expect(
+        value(
+          "select approve_source_import($1,'Shared checklists can clarify who owns the next step.','approved_fact',true)",
+          [id],
+        ),
+      ).rejects.toThrow(/author review/);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("rejects stale credential imports and approval after connection removal", async () => {
+    await db.exec("begin");
+    try {
+      await service();
+      await db.query(
+        "select store_source_credential($1,$2,'fathom','new-key',null)",
+        [org, member],
+      );
+      await db.exec("savepoint stale");
+      await expect(
+        value(
+          "select stage_source_import($1,$2,'fathom','123','Shared checklists can clarify who owns the next step.','old-key')",
+          [org, member],
+        ),
+      ).rejects.toThrow(/Connection/);
+      await db.exec("rollback to savepoint stale");
+      const id = await value<string>(
+        "select stage_source_import($1,$2,'fathom','123','Shared checklists can clarify who owns the next step.','new-key')",
+        [org, member],
+      );
+      await db.query(
+        "delete from source_credentials where organization_id=$1 and user_id=$2",
+        [org, member],
+      );
+      await as(member);
+      await expect(
+        value(
+          "select approve_source_import($1,'Shared checklists can clarify who owns the next step.','approved_fact',true)",
+          [id],
+        ),
+      ).rejects.toThrow(/Connection/);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
   it("cancels in-flight work on pause and invalidates drafts on source removal", async () => {
     await as(member);
     const id = (

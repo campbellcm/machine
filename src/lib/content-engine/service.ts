@@ -187,6 +187,7 @@ export async function processEngineJob(id: string) {
 }
 export async function processEngineQueue() {
   const db = serviceDatabase();
+  await db.rpc("cleanup_source_imports");
   const { error } = await db.rpc("ce_tick");
   if (error) throw new Error("Queue unavailable");
   const { data: jobs, error: readError } = await db
