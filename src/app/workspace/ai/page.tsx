@@ -1,3 +1,4 @@
+import { createBrief } from "./content-actions";
 import { emailDeliveryReady } from "@/lib/delivery/worker";
 import { slackConfig } from "@/lib/delivery/slack";
 import { disconnectSlack } from "@/lib/delivery/actions";
@@ -203,6 +204,65 @@ export default async function AI({
                     ? "Could not save. Check approval, date, source permissions and connection."
                     : connectionNotice(notice)}
         </p>
+      )}
+      {admin && (
+        <details className="live-card">
+          <summary>Company campaign brief</summary>
+          <p>
+            Set a shared objective and audience. Each teammate gets angles
+            shaped by their role and voice. This replaces the current campaign
+            direction; existing approvals need review again.
+          </p>
+          <form action={createBrief}>
+            <label>
+              Campaign title
+              <input name="title" required minLength={3} maxLength={120} />
+            </label>
+            <label>
+              Objective
+              <textarea
+                name="objective"
+                required
+                minLength={3}
+                maxLength={400}
+              />
+            </label>
+            <label>
+              Audience
+              <textarea
+                name="audience"
+                required
+                minLength={3}
+                maxLength={400}
+              />
+            </label>
+            <label>
+              Approved facts
+              <textarea
+                name="facts"
+                required
+                minLength={30}
+                maxLength={12000}
+              />
+            </label>
+            <label>
+              Call to action
+              <textarea name="cta" required minLength={3} maxLength={400} />
+            </label>
+            <label>
+              <input type="checkbox" name="approved" required />I have
+              permission to share these facts with the team and use them in
+              external posts. I have removed confidential and personal
+              information.
+            </label>
+            <p>
+              Enroll your own AI profile first. Facts become an approved shared
+              source, separate from campaign preferences. No post is approved or
+              published by this action.
+            </p>
+            <button className="live-button">Save campaign brief</button>
+          </form>
+        </details>
       )}
       <ContentEngine
         key={org.id + (view || "")}

@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M16 — inclusive rewards and personal progress.
+Current milestone: M17 — campaign briefs and channel adaptations.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -374,3 +374,12 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - 126 tests pass including days, improvement, first-post history, team winners, repeat settlement and authorization. Lint/typecheck passed before final copy; independent review and hosted validation pending. First publication means first recorded participating post, not unverifiable social history.
 
 - M16 final review cleared after correcting day-score tie timestamps and restoring the verified-post template. 127 tests plus lint/typecheck pass.
+
+
+## M17 — campaign briefs and channel adaptations
+
+- Enrolled admins can enter objective, audience, approved facts and CTA. Preferences become current campaign direction while approved facts become a separately permissioned shared source. Existing approvals are invalidated by strategy changes. No rewards or CRM contact data is provided to generation.
+- Authors can request a separate LinkedIn or X version of an existing evidence-backed idea. This uses the existing bounded durable queue and unchanged model, preserves current evidence checks, enforces X length, and creates new unapproved drafts. The original remains unchanged; each channel requires separate review and approval.
+- Additive migration 023, author/admin authorization and atomic brief creation. Tests cover channel override, idempotency, no inherited approval, author-only adaptation and facts separated from preferences. Native recorder ingestion and performance-learning additions still remain.
+
+- M16 release: PR #15 merged at dd22cf3e8c8f65ca2c65a2c360a551cfd9a33318 after review, full CI and preview verification. M17: 129 tests, lint/typecheck and independent review passed; hosted validation pending.
