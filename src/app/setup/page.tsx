@@ -174,6 +174,22 @@ export default function Setup() {
           account before inviting your team. iMessage is deferred.
         </p>
       </section>
+      <section className="live-card">
+        <h2>Approved work-to-content imports</h2>
+        <p>
+          Fathom users save their own API key in AI, then select a recording ID.
+          Slack source access is separate from message delivery: add the user
+          scope channels:history and channels:read and register{" "}
+          <code>/api/sources/slack/callback</code> on your HTTPS domain.
+          Existing delivery scope chat:write remains separate. No private Slack
+          channels or direct messages are imported.
+        </p>
+        <p>
+          Members review and edit imports before AI processing. Verify a sample
+          recording and selected Slack message with your own accounts. Provider
+          API availability and organization permissions still apply.
+        </p>
+      </section>
       <h2>Implementation status</h2>
       <p>
         Account setup unlocks the implemented flows. The remaining roadmap still

@@ -1,3 +1,4 @@
+import { SourceImports } from "@/components/content-engine/source-imports";
 import { formatLesson } from "@/lib/analytics/insights";
 import { saveExample } from "./example-actions";
 import { createBrief } from "./content-actions";
@@ -377,6 +378,7 @@ export default async function AI({
           <p>No examples saved yet.</p>
         )}
       </details>
+      <SourceImports />
       <ContentEngine
         key={org.id + (view || "")}
         data={data}

@@ -1,5 +1,15 @@
 export function connectionNotice(state: string) {
   const messages: Record<string, string> = {
+    "source-connected":
+      "Source connection saved. Select material to import for your private review.",
+    "source-key-saved":
+      "Fathom key saved securely. Access will be checked on import.",
+    "source-imported":
+      "Imported privately. Review and remove confidential details before approving AI use.",
+    "source-approved": "Edited source approved for private AI preparation.",
+    "source-disconnected": "Source connection and imported sources removed.",
+    "source-failed":
+      "Import could not be completed. Check permissions, current connection, content length and setup; wait a minute before retrying.",
     "example-saved": "Your saved examples were updated.",
     "example-failed": "That post is no longer shared or could not be saved.",
     "adapt-queued":

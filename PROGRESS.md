@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M18 — evidence-based content learning.
+Current milestone: M19 — selected Fathom and Slack source imports.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -393,3 +393,14 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Additive migration 024 protects bookmarks with own-only RLS and read-time visibility checks. Tests cover private annotations, source withdrawal, tenant isolation and minimum/comparable breakout baselines. Hosted validation and independent review pending.
 
 - M17 release: PR #16 merged at 8208ff9175c5345ef5c79aec18ec669d2b14dc92 after review, full CI and preview. M18: 133 tests and independent review pass; lint/typecheck passed.
+
+
+## M19 — selected work-to-content imports
+
+- Fathom uses each member’s encrypted API key and selected recording ID. Slack has separate user OAuth public-channel history authorization, fetching one exact selected message only. No private channels, DMs, recorder-wide synchronization or automatic external sharing.
+- Imports are private staging records, excluded from AI. Authors edit/redact and explicitly approve inspiration/fact use before the existing evidence pipeline runs. Fathom speaker/invitee metadata is discarded; automated redaction is limited and UI requires confidentiality review. Long recordings use selected excerpts via existing Sources.
+- Unapproved records expire after seven days (bounded scheduled cleanup); approved sources expire within 30 days. Disconnect removes imported sources and invalidates dependent drafts. Tokens are service-only encrypted; staging is author-only RLS. Opt-out/removal removes credentials and imports.
+- Official docs checked: Fathom quickstart/transcript API, Slack OAuth and conversations.history (exact timestamp, user channels:history). Requests are bounded and one per user/minute. Native live-account verification still requires provider setup. Other recorder adapters remain future expansion after Fathom pilot.
+- Tests cover provider payload minimization, fixed endpoints, exact Slack-message selection, private staging, explicit author approval and disconnect cleanup. Independent review and hosted validation pending.
+
+- M18 release: PR #17 merged at 6731dd9593c8b537ab0851b51de814503c74c24e after full CI, review and preview verification. M19 review cleared after credential-version checks, shared disconnect/approval locking and explicit Slack conversation privacy checks; 140 tests plus lint/typecheck pass.
