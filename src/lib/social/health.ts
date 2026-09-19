@@ -1,5 +1,9 @@
 export function connectionNotice(state: string) {
   const messages: Record<string, string> = {
+    "link-added":
+      "Campaign link added. Review and approve the updated text before publishing.",
+    "link-failed":
+      "The campaign link could not be added. Refresh the draft and try again.",
     "slack-connected":
       "Slack delivery connected. Select Slack in your daily draft preferences to use it.",
     "slack-disconnected": "Slack delivery disconnected.",

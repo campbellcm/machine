@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M13 — private daily draft delivery.
+Current milestone: M14 — campaign attribution in the author workflow.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -339,3 +339,14 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Delivery history, connection/disconnection, setup instructions and actionable status are within AI and Setup. Scheduled pilot capacity is one notice per 15-minute slot. Provider setup is required; configured credentials are not proof of a successful delivery.
 - Interrupted sends become uncertain and are not blindly replayed. Abandoned email workers may reclaim within 20 hours using the same Resend key; abandoned Slack sends become uncertain. No provider messages were sent during development.
 - Official documentation checked: Resend idempotency (24-hour window), Slack OAuth v2 and chat.postMessage. Unit/database tests cover verified recipient, payload minimization, ownership/RLS, leases, pause cancellation, Slack uncertainty and scope validation. Independent review and hosted checks pending.
+
+
+## M14 — campaign attribution in AI
+
+- Authors can attach an active company campaign link directly inside AI. The edit revokes prior approvals and requires fresh author review. Campaigns stay inside the existing AI flow; no additional primary tab.
+- Tracked redirects now label X and LinkedIn accurately, including fallback redirects when analytics is unavailable. Post detail shows safe lifetime aggregates; company admins see 30-day attribution health and latest click/conversion receipt times.
+- The existing website capture and server conversion endpoint use a 30-day last tracked click, bot exclusion, 30-minute unique-click deduplication and idempotent conversion event IDs. Documentation distinguishes click-linked outcomes from broader influence; CRM revenue remains unavailable.
+- No customer website instrumentation, external messages or provider activity performed. Unit/database tests cover channel labeling, approval revocation on link edits, cross-tenant/admin-only attribution diagnostics and existing deduplication. Independent review and hosted checks pending.
+
+- M13 release: PR #12 merged at 545f0edfb40789841f30f7ec171e4f1ac5a1647a after 122 tests, full CI, independent review and hosted preview verification.
+- M14 validation: 123 tests, lint/typecheck pass; independent review cleared. Hosted checks remain the release gate.

@@ -10,10 +10,49 @@ export default async function Campaigns() {
     .from("campaigns")
     .select("*")
     .eq("organization_id", org.id);
+  const { data: health, error: healthError } = await db.rpc(
+    "attribution_health",
+    { org: org.id },
+  );
   const key = (await cookies()).get("crewcast_new_key")?.value;
   return (
     <>
       <h1>See where your posts lead.</h1>
+      <section className="live-card">
+        <h2>Attribution health</h2>
+        {healthError || !health ? (
+          <p>Reporting is unavailable. Apply the latest database migrations.</p>
+        ) : (
+          <>
+            <p>
+              Last 30 days: {health.unique_clicks} unique tracked clicks ·{" "}
+              {health.attributed} attributed conversion events ·{" "}
+              {health.unattributed} unattributed events.
+            </p>
+            <p>
+              Latest click:{" "}
+              {health.last_click
+                ? new Date(health.last_click).toISOString()
+                : "None received"}
+              . Latest conversion received:{" "}
+              {health.last_conversion
+                ? new Date(health.last_conversion).toISOString()
+                : "None received"}
+              .
+            </p>
+          </>
+        )}
+        <p>
+          Attribution uses the latest tracked click retained by your website,
+          within 30 days of the conversion. Preview bots are excluded; repeat
+          clicks within 30 minutes do not inflate unique clicks. Leads in Home
+          include lead and demo-booked events.
+        </p>
+        <p>
+          These are observed click-linked outcomes, not proof that a post caused
+          a sale. Broader influence and CRM revenue are not measured yet.
+        </p>
+      </section>
       <form className="live-card" action={createCampaign}>
         <h2>Create a campaign</h2>
         <label>

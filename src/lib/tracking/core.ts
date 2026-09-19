@@ -23,11 +23,12 @@ export function destinationUrl(
   campaign: string,
   slug: string,
   click?: string,
+  channel: "linkedin" | "x" = "linkedin",
 ) {
   const url = new URL(destination);
   if (url.protocol !== "https:" || url.username || url.password)
     throw new Error("HTTPS destination required");
-  url.searchParams.set("utm_source", "linkedin");
+  url.searchParams.set("utm_source", channel);
   url.searchParams.set("utm_medium", "employee_advocacy");
   url.searchParams.set("utm_campaign", campaign);
   url.searchParams.set("utm_content", slug);

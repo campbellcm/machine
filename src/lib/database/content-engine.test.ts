@@ -220,6 +220,25 @@ describe("Content engine permissions and workflow", () => {
     expect(
       (await command("export", { id: draft, revision: 1 })).body,
     ).toContain("I work at Acme.");
+    // Attaching a campaign link is an edit and invalidates author approval.
+    await db.exec("begin");
+    await as(owner);
+    const campaign = await value<string>(
+      "select create_campaign($1,'Launch','https://example.com','launch')",
+      [org],
+    );
+    await as(member);
+    await value("select attach_link($1,$2,'new1234','https://app.example',1)", [
+      draft,
+      campaign,
+    ]);
+    expect(
+      await value("select state from ce_draft_meta where draft_id=$1", [draft]),
+    ).toBe("ready_for_employee");
+    expect(
+      await value("select approved_revision from drafts where id=$1", [draft]),
+    ).toBeNull();
+    await db.exec("rollback");
     // API publication uses the same approval and evidence guard.
     await db.exec("begin");
     await db.query("select claim_channel_publish($1,1,'linkedin')", [draft]);

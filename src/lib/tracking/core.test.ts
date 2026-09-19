@@ -29,3 +29,14 @@ it("preserves destination parameters and includes no private program data", () =
   expect(url.toString()).not.toMatch(/reward|payout|challenge/);
   expect(() => destinationUrl("javascript:alert(1)", "c", "s")).toThrow();
 });
+it("labels X campaign traffic accurately even when analytics is unavailable", () => {
+  const url = destinationUrl(
+    "https://example.com?cc_click=stale",
+    "launch",
+    "abcdefg",
+    undefined,
+    "x",
+  );
+  expect(url.searchParams.get("utm_source")).toBe("x");
+  expect(url.searchParams.has("cc_click")).toBe(false);
+});

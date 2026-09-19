@@ -78,6 +78,7 @@ export type AdminReport = {
   feedback: { action: string; reason: string; total: number }[];
 };
 export type EngineData = {
+  campaigns?: { id: string; name: string }[];
   name: string;
   company: string;
   admin: boolean;

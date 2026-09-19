@@ -192,8 +192,10 @@ export default async function Team({
       <p className="v1-note">
         Connection checks verify profile access, not analytics coverage or
         publishing permissions. X renews eligible authorizations automatically.
-        LinkedIn asks you to reconnect when authorization expires. Scheduled X
-        publishing and analytics sync are not enabled yet.
+        LinkedIn asks you to reconnect when authorization expires.
+        Author-approved LinkedIn/X scheduling and optional recent X post sync
+        are available after setup. LinkedIn analytics requires additional
+        provider access.
       </p>
       {admin && (
         <details className="v1-card">
