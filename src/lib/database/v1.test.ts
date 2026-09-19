@@ -825,3 +825,50 @@ describe("Inclusive reward scoring", () => {
     ).rejects.toThrow(/target/);
   });
 });
+
+describe("Saved post examples", () => {
+  it("keeps notes private and removes withdrawn imported content from the library", async () => {
+    await db.exec("begin");
+    try {
+      await db.exec("reset role");
+      const id = await scalar<string>(
+        "insert into tracked_posts(organization_id,user_id,provider,provider_post_id,provider_person,body,published_at,url,participating) values($1,$2,'x','example123','author','Approved public example',now(),'https://x.com/i/status/123',true) returning id",
+        [org, member],
+      );
+      await as(owner);
+      await db.query(
+        "select save_post_example($1,$2,'Useful structure',false)",
+        [org, id],
+      );
+      expect(
+        await scalar<unknown[]>("select post_examples($1)", [org]),
+      ).toHaveLength(1);
+      await as(member);
+      expect(
+        (await db.query("select * from post_bookmarks")).rows,
+      ).toHaveLength(0);
+      expect(
+        await scalar<unknown[]>("select post_examples($1)", [org]),
+      ).toHaveLength(0);
+      await db.query("select select_work_post($1,false)", [id]);
+      await as(owner);
+      expect(
+        await scalar<unknown[]>("select post_examples($1)", [org]),
+      ).toHaveLength(0);
+      await expect(
+        db.query("select save_post_example($1,$2,'Try to read',false)", [
+          org,
+          id,
+        ]),
+      ).rejects.toThrow(/Shared published/);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("denies outsider library access", async () => {
+    await as(outsider);
+    await expect(db.query("select post_examples($1)", [org])).rejects.toThrow(
+      /Membership/,
+    );
+  });
+});

@@ -1,4 +1,5 @@
 "use client";
+import { breakoutPosts } from "@/lib/analytics/insights";
 import { PostDetail } from "./post-detail";
 import { changeLabel } from "@/lib/analytics/metrics";
 import { useState } from "react";
@@ -86,6 +87,19 @@ export function HomeDashboard({
     );
   return (
     <div className="v1">
+      {!demo && breakoutPosts(report.posts).length > 0 && (
+        <details className="live-card">
+          <summary>Posts above their author’s usual range</summary>
+          {breakoutPosts(report.posts).map((a) => (
+            <p key={a.id}>
+              {a.author}: {a.impressions.toLocaleString()} impressions,{" "}
+              {a.ratio.toFixed(1)}× the median of {a.samples} earlier posts on
+              the same channel at a similar age (24–48 hours). This is a signal
+              to explore, not a forecast.
+            </p>
+          ))}
+        </details>
+      )}
       <PageHeading
         eyebrow="A little effort. A bigger impact."
         title="Your team, in the spotlight."
@@ -338,7 +352,7 @@ export function HomeDashboard({
                   View post <ArrowUpRight size={14} />
                 </a>
               )}
-            <PostDetail post={p} timezone={timezone} />
+            <PostDetail post={p} timezone={timezone} demo={demo} />
             {demo && <small>Fictional post · preview only</small>}
           </article>
         ))}

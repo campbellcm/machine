@@ -1,5 +1,7 @@
 export function connectionNotice(state: string) {
   const messages: Record<string, string> = {
+    "example-saved": "Your saved examples were updated.",
+    "example-failed": "That post is no longer shared or could not be saved.",
     "adapt-queued":
       "Channel version queued. It will appear in Drafts for separate review.",
     "adapt-failed":
