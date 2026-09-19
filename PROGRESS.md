@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M15 — teammate profiles and participation support.
+Current milestone: M16 — inclusive rewards and personal progress.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -360,3 +360,17 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Tests cover cross-tenant denial, private drafts excluded even for admins, and voice flag privacy. Independent review and hosted validation pending.
 
 - M14 release: PR #13 merged at 42b39a9395ac9c468bf6e63b336c9c9d2e4a6830 after full CI and preview checks. M15: 124 tests, lint/typecheck and independent review passed; hosted profile interaction checks gate release.
+
+
+## M15 release
+
+- PR #14 merged at ce2b7660f902c78cb2a4088c3790db5f149ec9d3 after full CI, review and hosted sample-profile interaction verification.
+
+## M16 — inclusive rewards
+
+- Adds templates for unique clicks, consistent publishing days, absolute post improvement versus an equal prior window, first recorded publication and shared team post targets. New publication modes include verified workspace posts and author-selected imports with deduplication. Existing challenge scoring is preserved.
+- One shared scoring function powers live standings and settled results. Team targets recognize all eligible contributors once the target is reached. Individual ties retain published rules. Winners see an in-app notice and company fulfillment remains external; no payment or external message is sent.
+- Rewards show personal score, position, next-score gap, team target and remaining time. Rules and prizes remain locked on creation, with 72-hour settlement and idempotent final results.
+- 126 tests pass including days, improvement, first-post history, team winners, repeat settlement and authorization. Lint/typecheck passed before final copy; independent review and hosted validation pending. First publication means first recorded participating post, not unverifiable social history.
+
+- M16 final review cleared after correcting day-score tie timestamps and restoring the verified-post template. 127 tests plus lint/typecheck pass.
