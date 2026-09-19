@@ -1,7 +1,7 @@
 # PROGRESS.md
 
-Current milestone: M19 — selected Fathom and Slack source imports.
-Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
+Current milestone: M20 — opt-in weekly team digest and release integration.
+Status: Local implementation and database tests complete for the flows listed below; real-account verification and provider-gated integrations remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
 
@@ -404,3 +404,15 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Tests cover provider payload minimization, fixed endpoints, exact Slack-message selection, private staging, explicit author approval and disconnect cleanup. Independent review and hosted validation pending.
 
 - M18 release: PR #17 merged at 6731dd9593c8b537ab0851b51de814503c74c24e after full CI, review and preview verification. M19 review cleared after credential-version checks, shared disconnect/approval locking and explicit Slack conversation privacy checks; 140 tests plus lint/typecheck pass.
+
+
+## M20 — Weekly digest and release integration
+
+- Added author-controlled Home opt-in for verified email or connected Slack DM. Weekly summaries contain prior complete UTC-week shared posts/participation, deduplicated clicks, attributed leads, a top tracked public post and a deterministic next-step suggestion. No private drafts, source notes, CRM contacts or rewards enter delivery.
+- Durable per-organization/member/week claims, service-only worker, owner-only preference/history RLS, membership cleanup, conservative no-retry after failed/uncertain sends. Queue handles one recipient per 15-minute slot. Delivery may arrive later under load.
+- Shared existing email/Slack transport, safe organization-aware Home deep link through sign-in, explicit unsubscribe and delivery status. Existing daily reminders unchanged.
+- Updated Setup implementation status for shipped M14–M19 work. All migrations are additive.
+- Remaining launch dependencies: configure Supabase and apply all migrations; configure provider developer accounts, AI API access, verified email/Slack and cron secrets; run real-account sign-in, post, tracking, draft, delivery and conversion acceptance. No live credentials or real content were used. LinkedIn analytics, CRM sales outcomes, additional native recorder connectors and iMessage remain unavailable.
+- This release implements the requested scoped workflow; it does not establish provider approval, live integration verification or production readiness.
+
+- M20 verification: 147 tests passed; typecheck and lint passed; independent agent review cleared. Hosted CI/build/browser checks run on the final PR before merge. Real-provider verification remains pending.

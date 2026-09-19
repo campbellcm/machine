@@ -12,9 +12,15 @@ export async function GET(request: NextRequest) {
       const org = z
         .uuid()
         .safeParse((await cookies()).get("crewcast_inbox_org")?.value);
+      const view =
+        (await cookies()).get("crewcast_inbox_view")?.value === "home"
+          ? "home"
+          : "drafts";
       return NextResponse.redirect(
         appUrl() +
-          (org.success ? "/draft-inbox?org=" + org.data : "/workspace"),
+          (org.success
+            ? "/draft-inbox?org=" + org.data + "&view=" + view
+            : "/workspace"),
       );
     }
   }

@@ -1,3 +1,4 @@
+import { WeeklyDigest } from "@/components/v1/weekly-digest";
 import { previousPeriod } from "@/lib/analytics/metrics";
 import { addTrackedPosts, trackedSchema } from "@/lib/analytics/report";
 import {
@@ -15,6 +16,7 @@ export default async function Home({
     start?: string;
     end?: string;
     tracking?: string;
+    digest?: string;
     importPage?: string;
   }>;
 }) {
@@ -200,6 +202,7 @@ export default async function Home({
         {...range}
         timezone={org.timezone}
       />
+      <WeeklyDigest notice={q.digest} />
       <details className="live-card">
         <summary>My connected posts & tracking</summary>
         <h2>You choose what joins the team feed.</h2>

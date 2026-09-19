@@ -872,3 +872,118 @@ describe("Saved post examples", () => {
     );
   });
 });
+
+describe("Weekly digest consent and privacy", () => {
+  it("summarizes only participating posts in the prior complete week", async () => {
+    await db.exec("begin");
+    try {
+      await as(member);
+      const isolated = await scalar<string>(
+        "select create_organization('Digest test','','UTC')",
+      );
+      await db.exec("reset role");
+      await db.query(
+        "update memberships set opted_in_at=now() where organization_id=$1",
+        [isolated],
+      );
+      await db.query(
+        "insert into tracked_posts(organization_id,user_id,provider,provider_post_id,provider_person,body,published_at,url,participating) values ($1,$2,'x','weekly1','self','Shared',date_trunc('week',now())-interval '2 days','https://x.com/i/status/1',true),($1,$2,'x','weekly2','self','Private',date_trunc('week',now())-interval '2 days','https://x.com/i/status/2',false),($1,$2,'x','weekly3','self','Current',now(),'https://x.com/i/status/3',true)",
+        [isolated, member],
+      );
+      await as(member);
+      await db.query("select set_weekly_digest($1,true,'email')", [isolated]);
+      await db.exec("reset role;set role service_role");
+      const claim = await scalar<{
+        summary: { posts: number; participants: number };
+      }>("select claim_weekly_digest(array['email'])");
+      expect(claim.summary.posts).toBe(1);
+      expect(claim.summary.participants).toBe(1);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+
+  it("isolates preferences and history, claims once, cancels on opt-out", async () => {
+    await db.exec("begin");
+    try {
+      await as(member);
+      await db.query("select set_weekly_digest($1,true,'email')", [org]);
+      expect(
+        (await db.query("select * from weekly_preferences")).rows,
+      ).toHaveLength(1);
+      await as(owner);
+      expect(
+        (await db.query("select * from weekly_preferences")).rows,
+      ).toHaveLength(0);
+      await db.exec("reset role;set role service_role");
+      const claim = await scalar<{
+        id: string;
+        lease: string;
+        summary: { posts: number };
+      }>("select claim_weekly_digest(array['email'])");
+      expect(claim.id).toBeTruthy();
+      expect(claim.summary.posts).toBeGreaterThanOrEqual(0);
+      expect(
+        await scalar("select claim_weekly_digest(array['email'])"),
+      ).toBeNull();
+      await as(owner);
+      expect(
+        (await db.query("select * from weekly_deliveries")).rows,
+      ).toHaveLength(0);
+      await as(member);
+      expect(
+        (await db.query("select * from weekly_deliveries")).rows,
+      ).toHaveLength(1);
+      await db.query("select set_weekly_digest($1,false,'email')", [org]);
+      expect(await scalar("select status from weekly_deliveries")).toBe(
+        "canceled",
+      );
+      await db.exec("reset role;set role service_role");
+      expect(
+        await scalar("select finish_weekly_digest($1,$2,'sent')", [
+          claim.id,
+          claim.lease,
+        ]),
+      ).toBe(false);
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+  it("denies outsiders and authenticated queue claims", async () => {
+    await as(outsider);
+    await expect(
+      db.query("select set_weekly_digest($1,true,'email')", [org]),
+    ).rejects.toThrow(/Opted-in/);
+    await as(member);
+    await expect(
+      db.query("select claim_weekly_digest(array['email'])"),
+    ).rejects.toThrow(/permission/);
+  });
+  it("never replays a stalled delivery and disables removed members", async () => {
+    await db.exec("begin");
+    try {
+      await as(member);
+      await db.query("select set_weekly_digest($1,true,'email')", [org]);
+      await db.exec("reset role;set role service_role");
+      await scalar("select claim_weekly_digest(array['email'])");
+      await db.exec(
+        "update weekly_deliveries set created_at=now()-interval '3 minutes'",
+      );
+      expect(
+        await scalar("select claim_weekly_digest(array['email'])"),
+      ).toBeNull();
+      expect(await scalar("select status from weekly_deliveries")).toBe(
+        "uncertain",
+      );
+      await db.query(
+        "update memberships set removed_at=now() where organization_id=$1 and user_id=$2",
+        [org, member],
+      );
+      expect(await scalar("select enabled from weekly_preferences")).toBe(
+        false,
+      );
+    } finally {
+      await db.exec("rollback");
+    }
+  });
+});
