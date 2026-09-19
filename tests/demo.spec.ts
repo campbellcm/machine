@@ -56,6 +56,17 @@ test("team search and sample daily routine", async ({ page }) => {
   await expect(
     page.getByRole("list", { name: "Team members" }).getByRole("listitem"),
   ).toHaveCount(1);
+  await page
+    .getByRole("list", { name: "Team members" })
+    .getByRole("button", { name: /Sarah/ })
+    .click();
+  await expect(
+    page.getByRole("region", { name: "Teammate performance" }),
+  ).toContainText("Published work only");
+  await page.getByRole("button", { name: "Close profile" }).click();
+  await expect(
+    page.getByRole("region", { name: "Teammate performance" }),
+  ).toHaveCount(0);
   await page.getByRole("link", { name: "AI", exact: true }).click();
   await page
     .getByRole("button", { name: "Content preferences", exact: true })

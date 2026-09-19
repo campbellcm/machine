@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M14 — campaign attribution in the author workflow.
+Current milestone: M15 — teammate profiles and participation support.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -350,3 +350,13 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 
 - M13 release: PR #12 merged at 545f0edfb40789841f30f7ec171e4f1ac5a1647a after 122 tests, full CI, independent review and hosted preview verification.
 - M14 validation: 123 tests, lint/typecheck pass; independent review cleared. Hosted checks remain the release gate.
+
+
+## M15 — teammate profiles and participation support
+
+- Team names open a compact published-work profile with 30-day posts/clicks/leads and the latest 20 published or author-selected posts. Private drafts, unselected imported posts and source notes are excluded even for admins.
+- Safe onboarding flags show connected account and first publication; voice setup is visible only to the person and company admins. Admin participation overview includes opt-in, publishing participation and connections needing support. Copy explicitly excludes employee productivity assessment.
+- No new primary tab. Demo supports sample profiles and participation counts. Additive migration 021 exposes tenant-checked safe projections with authoritative uncapped post counts and imported-post deduplication.
+- Tests cover cross-tenant denial, private drafts excluded even for admins, and voice flag privacy. Independent review and hosted validation pending.
+
+- M14 release: PR #13 merged at 42b39a9395ac9c468bf6e63b336c9c9d2e4a6830 after full CI and preview checks. M15: 124 tests, lint/typecheck and independent review passed; hosted profile interaction checks gate release.
