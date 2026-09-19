@@ -23,8 +23,47 @@ export async function deliverDraftNotice(id: string) {
   if (error) throw new Error("Delivery queue unavailable");
   if (!data) return;
   const claim = claimSchema.parse(data);
-  let outcome: "sent" | "failed" | "uncertain" = "failed";
   const text = `Your daily ${productName} drafts are ready. Review and edit them privately: ${appUrl()}/draft-inbox?org=${claim.organization_id}\nNothing is published without your approval. Pause daily drafts in AI to stop these messages.`;
+  const outcome = await sendPrivateNotice(
+    db,
+    claim,
+    text,
+    `Your daily ${productName} drafts`,
+    "draft-delivery",
+  );
+  await db.rpc("finish_draft_delivery", {
+    delivery: id,
+    claim: claim.lease,
+    outcome,
+  });
+}
+export async function deliverDraftQueue() {
+  const channels = [
+    ...(emailDeliveryReady() ? ["email"] : []),
+    ...(process.env.TOKEN_ENCRYPTION_KEY ? ["slack"] : []),
+  ];
+  if (!channels.length) return;
+  const db = serviceDatabase();
+  const { data, error } = await db
+    .from("draft_deliveries")
+    .select("id")
+    .in("status", ["pending", "sending"])
+    .in("channel", channels)
+    .order("created_at")
+    .limit(1);
+  if (error) throw new Error("Delivery setup required");
+  for (const row of data || []) await deliverDraftNotice(row.id);
+}
+
+export async function sendPrivateNotice(
+  db: ReturnType<typeof serviceDatabase>,
+  claim: z.infer<typeof claimSchema>,
+  text: string,
+  subject: string,
+  keyPrefix: string,
+) {
+  let outcome: "sent" | "failed" | "uncertain" = "failed";
+
   try {
     if (claim.channel === "email" && emailDeliveryReady()) {
       const { data: auth } = await db.auth.admin.getUserById(claim.user_id);
@@ -36,12 +75,12 @@ export async function deliverDraftNotice(id: string) {
         headers: {
           Authorization: "Bearer " + process.env.RESEND_API_KEY,
           "Content-Type": "application/json",
-          "Idempotency-Key": "draft-delivery/" + claim.id,
+          "Idempotency-Key": keyPrefix + "/" + claim.id,
         },
         body: JSON.stringify({
           from: process.env.EMAIL_FROM,
           to: [email],
-          subject: `Your daily ${productName} drafts`,
+          subject,
           text,
         }),
         signal: AbortSignal.timeout(10000),
@@ -78,26 +117,5 @@ export async function deliverDraftNotice(id: string) {
   } catch {
     /* An uncertain send is never blindly repeated. No recipient/content logs. */
   }
-  await db.rpc("finish_draft_delivery", {
-    delivery: id,
-    claim: claim.lease,
-    outcome,
-  });
-}
-export async function deliverDraftQueue() {
-  const channels = [
-    ...(emailDeliveryReady() ? ["email"] : []),
-    ...(process.env.TOKEN_ENCRYPTION_KEY ? ["slack"] : []),
-  ];
-  if (!channels.length) return;
-  const db = serviceDatabase();
-  const { data, error } = await db
-    .from("draft_deliveries")
-    .select("id")
-    .in("status", ["pending", "sending"])
-    .in("channel", channels)
-    .order("created_at")
-    .limit(1);
-  if (error) throw new Error("Delivery setup required");
-  for (const row of data || []) await deliverDraftNotice(row.id);
+  return outcome;
 }

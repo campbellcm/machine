@@ -190,6 +190,15 @@ export default function Setup() {
           API availability and organization permissions still apply.
         </p>
       </section>
+      <h2>Weekly team digest</h2>
+      <p>
+        In Home, each member can opt into email or connected Slack delivery.
+        Digests cover the prior complete UTC week and include shared
+        participation, tracked clicks, attributed leads and a suggested next
+        step. The weekly job uses the same delivery credentials and CRON_SECRET.
+        Check delivery history in Home; failed or uncertain deliveries are not
+        automatically repeated. No private drafts or source notes are included.
+      </p>
       <h2>Implementation status</h2>
       <p>
         Account setup unlocks the implemented flows. The remaining roadmap still
@@ -205,10 +214,10 @@ export default function Setup() {
         ))}
       </div>
       <p>
-        Native work-source connections and social analytics still need
-        additional implementation and provider access. Payroll and billing are
-        outside V1. See the project’s implementation status before inviting a
-        broader team.
+        Additional recorder connections, CRM outcomes and LinkedIn analytics
+        still need additional implementation and provider access. Payroll and
+        billing are outside V1. See the project’s implementation status before
+        inviting a broader team.
       </p>
     </main>
   );

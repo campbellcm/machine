@@ -6,6 +6,8 @@ import { appUrl } from "@/lib/supabase/config";
 export async function GET(request: NextRequest) {
   const org = z.uuid().safeParse(request.nextUrl.searchParams.get("org"));
   if (!org.success) return NextResponse.redirect(appUrl() + "/workspace/ai");
+  const view =
+    request.nextUrl.searchParams.get("view") === "home" ? "home" : "drafts";
   const db = await database();
   const {
     data: { user },
@@ -19,9 +21,11 @@ export async function GET(request: NextRequest) {
   };
   if (!user) {
     jar.set("crewcast_inbox_org", org.data, { ...options, maxAge: 3600 });
+    jar.set("crewcast_inbox_view", view, { ...options, maxAge: 3600 });
     return NextResponse.redirect(appUrl() + "/login");
   }
   jar.set("crewcast_inbox_org", "", { ...options, maxAge: 0 });
+  jar.set("crewcast_inbox_view", "", { ...options, maxAge: 0 });
   const { data: membership } = await db
     .from("memberships")
     .select("organization_id")
@@ -31,5 +35,7 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
   if (!membership) return NextResponse.redirect(appUrl() + "/workspace");
   jar.set("crewcast_org", org.data, { ...options, maxAge: 86400 * 30 });
-  return NextResponse.redirect(appUrl() + "/workspace/ai?view=drafts");
+  return NextResponse.redirect(
+    appUrl() + (view === "home" ? "/workspace" : "/workspace/ai?view=drafts"),
+  );
 }
