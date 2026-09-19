@@ -1,3 +1,5 @@
+import { formatLesson } from "@/lib/analytics/insights";
+import { saveExample } from "./example-actions";
 import { createBrief } from "./content-actions";
 import { emailDeliveryReady } from "@/lib/delivery/worker";
 import { slackConfig } from "@/lib/delivery/slack";
@@ -19,6 +21,46 @@ export default async function AI({
 }) {
   const { notice, view } = await searchParams;
   const { db, org, user, member } = await workspace();
+  const [
+    { data: examples, error: examplesError },
+    { data: published },
+    { data: attribution },
+  ] = await Promise.all([
+    db.rpc("post_examples", { org: org.id }),
+    db.rpc("teammate_public_posts", { org: org.id, person: user.id }),
+    db.rpc("published_post_attribution", { org: org.id }),
+  ]);
+  const savedExamples = (examples || []) as {
+    id: string;
+    note: string;
+    body: string;
+    channel: string;
+    author: string;
+  }[];
+  const ownResults = (
+    (published || []) as { id: string; body: string; channel: string }[]
+  )
+    .map((p) => ({
+      ...p,
+      clicks: Number(
+        (attribution || []).find(
+          (a: { draft_id: string }) => a.draft_id === p.id,
+        )?.clicks || 0,
+      ),
+    }))
+    .filter((p) => p.clicks >= 5)
+    .sort((a, b) => b.clicks - a.clicks)
+    .slice(0, 3);
+  // Server-side report window.
+  // eslint-disable-next-line react-hooks/purity
+  const insightStart = new Date(Date.now() - 30 * 86400000).toISOString();
+  const { count: editCount } = await db
+    .from("ce_events")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", org.id)
+    .eq("user_id", user.id)
+    .eq("action", "edit")
+    .gte("created_at", insightStart);
   const admin = ["owner", "admin"].includes(member.role);
   const [
     settings,
@@ -264,6 +306,77 @@ export default async function AI({
           </form>
         </details>
       )}
+      <details className="live-card">
+        <summary>Learn from your published work</summary>
+        <p>
+          These suggestions use your latest 20 shared publications and lifetime
+          tracked clicks. Different post ages and audiences affect results; this
+          is an experiment to try, not proof of what caused performance.
+        </p>
+        {ownResults.length ? (
+          ownResults.map((p) => (
+            <article className="live-card" key={p.id}>
+              <strong>
+                {p.clicks} unique tracked clicks · {p.channel}
+              </strong>
+              <p>{p.body.slice(0, 180)}…</p>
+              <p>{formatLesson(p.body)}</p>
+              <p>
+                Revisit this topic with a new approved insight. Your more/less
+                feedback and editing preferences continue to shape your own
+                suggestions.
+              </p>
+            </article>
+          ))
+        ) : (
+          <p>
+            Once one of your recent posts has at least five tracked clicks,
+            we’ll show its evidence here. Keep reviewing drafts and giving topic
+            feedback in the meantime.
+          </p>
+        )}
+        {!!editCount && editCount >= 3 && (
+          <p>
+            You edited drafts {editCount} times in the last 30 days. Review your
+            voice examples in Content preferences and add the phrases you kept.
+            Edit count does not measure writing quality.
+          </p>
+        )}
+        <h2>Your saved examples</h2>
+        <p>
+          Save team posts from Home → Post details. Examples are inspiration,
+          not permission to copy claims or another employee’s experience.
+        </p>
+        {examplesError ? (
+          <p>
+            Saved examples are unavailable. Apply the latest database update.
+          </p>
+        ) : (
+          savedExamples.map((p) => (
+            <article className="live-card" key={p.id}>
+              <strong>
+                {p.author} · {p.channel}
+              </strong>
+              <details>
+                <summary>{p.body.slice(0, 140)}…</summary>
+                <p style={{ whiteSpace: "pre-wrap" }}>{p.body}</p>
+              </details>
+              <p>{formatLesson(p.body)}</p>
+              {p.note && <p>Your note: {p.note}</p>}
+              <form action={saveExample}>
+                <input type="hidden" name="id" value={p.id} />
+                <input type="hidden" name="remove" value="yes" />
+                <button className="live-button secondary">
+                  Remove saved example
+                </button>
+              </form>
+            </article>
+          ))
+        )}
+        {!examplesError && !savedExamples.length && (
+          <p>No examples saved yet.</p>
+        )}
+      </details>
       <ContentEngine
         key={org.id + (view || "")}
         data={data}

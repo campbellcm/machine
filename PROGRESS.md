@@ -1,6 +1,6 @@
 # PROGRESS.md
 
-Current milestone: M17 — campaign briefs and channel adaptations.
+Current milestone: M18 — evidence-based content learning.
 Status: Local implementation and database tests complete for the flows listed below; real-account verification and substantial roadmap work remain. NOT production-ready or full-PRD complete.
 
 ## Completed milestones
@@ -383,3 +383,13 @@ Founder approved Crewcast-managed daily generation through OpenAI/Claude APIs an
 - Additive migration 023, author/admin authorization and atomic brief creation. Tests cover channel override, idempotency, no inherited approval, author-only adaptation and facts separated from preferences. Native recorder ingestion and performance-learning additions still remain.
 
 - M16 release: PR #15 merged at dd22cf3e8c8f65ca2c65a2c360a551cfd9a33318 after review, full CI and preview verification. M17: 129 tests, lint/typecheck and independent review passed; hosted validation pending.
+
+
+## M18 — saved examples and evidence-based suggestions
+
+- Home post details let members save published team examples with private notes. AI shows their own library, structural observations and a clear reminder to write original material. Withdrawn imports and removed authors disappear from library content; private drafts cannot be saved.
+- Personal suggestions use the latest 20 shared publications with at least five lifetime tracked clicks, displaying the supporting count and measurement limitations. Editing activity prompts voice-profile refinement; existing explicit more/less feedback continues to guide opportunities. No other employee’s private edits/notes are exposed or sent to AI.
+- Home breakout signals require five earlier same-author/same-channel observations at comparable post age (24–48h, within six hours), a nontrivial baseline and at least 2× median performance. Insufficient data produces no claim. Analysis is limited to loaded report posts; no unsupported network analytics is fabricated.
+- Additive migration 024 protects bookmarks with own-only RLS and read-time visibility checks. Tests cover private annotations, source withdrawal, tenant isolation and minimum/comparable breakout baselines. Hosted validation and independent review pending.
+
+- M17 release: PR #16 merged at 8208ff9175c5345ef5c79aec18ec669d2b14dc92 after review, full CI and preview. M18: 133 tests and independent review pass; lint/typecheck passed.

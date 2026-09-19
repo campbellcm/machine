@@ -1,13 +1,16 @@
 "use client";
+import { saveExample } from "@/app/workspace/ai/example-actions";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import type { Report } from "@/lib/v1/report";
 export function PostDetail({
   post,
   timezone,
+  demo = false,
 }: {
   post: Report["posts"][number];
   timezone: string;
+  demo?: boolean;
 }) {
   const a = post.analytics;
   const samples = a?.history.slice(-12) || [];
@@ -39,6 +42,27 @@ export function PostDetail({
             {timezone})
           </Dialog.Description>
           <p className="feed-body">{post.body}</p>
+          {!demo && (
+            <details>
+              <summary>Save this example to AI</summary>
+              <form action={saveExample}>
+                <input type="hidden" name="id" value={post.id} />
+                <label>
+                  What makes this useful?
+                  <input
+                    name="note"
+                    maxLength={400}
+                    placeholder="A clear opening, a helpful lesson…"
+                  />
+                </label>
+                <button className="live-button secondary">Save example</button>
+                <p>
+                  Save structure and inspiration. Write original content;
+                  another person’s results are not your evidence.
+                </p>
+              </form>
+            </details>
+          )}
           <div className="live-grid">
             <section>
               <h3>Lifetime impressions</h3>
